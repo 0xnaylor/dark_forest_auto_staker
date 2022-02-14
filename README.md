@@ -13,3 +13,8 @@ npx hardhat node
 node scripts/sample-script.js
 npx hardhat help
 ```
+
+To deploy to the mumbai testnet use the following command
+```
+npx hardhat run scripts/sample-script.js --network mumbai
+``` 
