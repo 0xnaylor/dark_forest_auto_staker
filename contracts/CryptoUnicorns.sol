@@ -6,8 +6,9 @@ import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
+import "./IStatsFacet.sol";
 
-contract CryptoUnicorns is ERC721, ERC721Enumerable, ERC721URIStorage, Ownable {
+contract CryptoUnicorns is ERC721, ERC721Enumerable, ERC721URIStorage, Ownable, IStatsFacet {
     using Counters for Counters.Counter;
 
     Counters.Counter private _tokenIdCounter;
@@ -51,4 +52,20 @@ contract CryptoUnicorns is ERC721, ERC721Enumerable, ERC721URIStorage, Ownable {
     {
         return super.supportsInterface(interfaceId);
     }
+
+    function getUnicornMetadata(uint256 _tokenId) external pure returns (bool,bool,bool,uint256,uint256,uint256,uint256) {
+
+            // bool origin, true
+            // bool gameLocked, false
+            // bool limitedEdition, true
+            // uint256 lifecycleStage, 2
+            // uint256 breedingPoints, 2
+            // uint256 unicornClass, 2
+            // uint256 hatchBirthday  1637710000
+            return (true, false, true, 2, 2, 2, 1637710000);
+        }
+
+    function getStats(uint256 _dna) external pure returns (uint256 attack, uint256 accuracy, uint256 movementSpeed, uint256 attackSpeed, uint256 defense, uint256 vitality, uint256 resistance, uint256 magic) {
+            return(130, 140, 123, 188, 151, 134, 213, 117);
+        }
 }
