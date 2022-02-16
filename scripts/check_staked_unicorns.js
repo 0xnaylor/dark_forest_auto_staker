@@ -14,7 +14,7 @@ async function main() {
     const address = wallet.address;
 
     // define the test contract addresses
-    const DARK_FOREST_CONTRACT = "0x56FcC29948f88E4090A5DCde3D5eA7258A9b9B50";
+    const DARK_FOREST_CONTRACT = "0xD1273B20a5d320f52A57200c4E301D08247C10B7";
 
     // define contract abi's
     const DarkForestAbiJson = dark_forest_artifact.abi;
@@ -24,6 +24,21 @@ async function main() {
 
     // check number of unicorns staked by address
     console.log(`Number of Unicorns Staked (check 1): ${await DarkForestContract.numStaked(address)}`);
+
+    // check current stake period
+    console.log(`Unicorns are staked for ${await DarkForestContract.stakePeriodSeconds()}`)
+
+    // get tokenId of the 1st Unicorn
+    const tokenId = await DarkForestContract.tokenOfStakerByIndex(address, 0);
+    console.log(`TokenId of staked Unicorn ${tokenId}`)
+
+    // Create a new JavaScript Date object based on the timestamp, 
+    // multiplied by 1000 so that the argument is in milliseconds, not seconds.
+    let unix_timestamp = await DarkForestContract.unstakesAt(tokenId);
+    var date = new Date(unix_timestamp * 1000);
+    var options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit'};
+    var formattedDateTime = date.toLocaleDateString("en-US", options);
+    console.log(`My Unicorn with Id "${tokenId}" unstakes at: ${formattedDateTime}`)
 }
 
 main()
