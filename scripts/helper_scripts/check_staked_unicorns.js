@@ -1,6 +1,6 @@
 const { ethers } = require("ethers");
 require("@nomiclabs/hardhat-ethers");
-const dark_forest_artifact = require("../artifacts/contracts/DarkForest.sol/DarkForest.json");
+const dark_forest_artifact = require("../../artifacts/contracts/DarkForest.sol/DarkForest.json");
 require("dotenv").config();
 
 async function main() {
@@ -23,22 +23,26 @@ async function main() {
     const DarkForestContract = new ethers.Contract(DARK_FOREST_CONTRACT, DarkForestAbiJson, wallet);
 
     // check number of unicorns staked by address
-    console.log(`Number of Unicorns Staked (check 1): ${await DarkForestContract.numStaked(address)}`);
+    const numStaked = await DarkForestContract.numStaked(address);
 
     // check current stake period
-    console.log(`Unicorns are staked for ${await DarkForestContract.stakePeriodSeconds()}`)
+    console.log(`Staking period for Unicorns is set to ${await DarkForestContract.stakePeriodSeconds()} seconds`)
 
     // get tokenId of the 1st Unicorn
-    const tokenId = await DarkForestContract.tokenOfStakerByIndex(address, 0);
-    console.log(`TokenId of staked Unicorn ${tokenId}`)
+    if (numStaked > 0) {    
+      const tokenId = await DarkForestContract.tokenOfStakerByIndex(address, 0);
+      console.log(`TokenId of staked Unicorn ${tokenId}`)
 
-    // Create a new JavaScript Date object based on the timestamp, 
-    // multiplied by 1000 so that the argument is in milliseconds, not seconds.
-    let unix_timestamp = await DarkForestContract.unstakesAt(tokenId);
-    var date = new Date(unix_timestamp * 1000);
-    var options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit'};
-    var formattedDateTime = date.toLocaleDateString("en-US", options);
-    console.log(`My Unicorn with Id "${tokenId}" unstakes at: ${formattedDateTime}`)
+      // Create a new JavaScript Date object based on the timestamp, 
+      // multiplied by 1000 so that the argument is in milliseconds, not seconds.
+      let unix_timestamp = await DarkForestContract.unstakesAt(tokenId);
+      var date = new Date(unix_timestamp * 1000);
+      var options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit'};
+      var formattedDateTime = date.toLocaleDateString("en-US", options);
+      console.log(`My Unicorn with Id "${tokenId}" unstakes at: ${formattedDateTime}`)
+    } else {
+      console.log("No Unicorns staked");
+    }
 }
 
 main()

@@ -1,32 +1,29 @@
 const { ethers } = require("ethers");
 require("@nomiclabs/hardhat-ethers");
-const dark_forest_artifact = require("../artifacts/contracts/DarkForest.sol/DarkForest.json");
 const crypto_unicorns_artifact = require("../artifacts/contracts/CryptoUnicorns.sol/CryptoUnicorns.json");
 
 require("dotenv").config();
 
 async function main() {
-    console.log("Running check_unicorn_balance script");
+    console.log("Running mint_test_unicorn script");
 
-    // get json rpc provider for mumbai testnet
     const provider = new ethers.providers.JsonRpcProvider("https://rpc-mumbai.matic.today", 80001);
-
-    // create a new wallet from the private key defined in the .env file
     const wallet = new ethers.Wallet(process.env.PRIVATE_KEY, provider);
     const address = wallet.address;
 
-    // define the test contract addresses
-    const UNICORN_NFT_CONTRACT = "0xa857eB8Bee42886e5a5a2Df13800Cb9Bc9dbA6C4";
-
-    // define contract abi's
+    const UNICORN_NFT_CONTRACT = "0x3C77b23c6303A20b5C72346Bc17FA16B0f950D35";
     const CryptoUnicornAbiJson = crypto_unicorns_artifact.abi;
-
-    // create the contract object
     const UnicornNFTContract = new ethers.Contract(UNICORN_NFT_CONTRACT, CryptoUnicornAbiJson, wallet);
 
-    // confirm how many unicorns are owned by the address
-    const tokensOwned = await UnicornNFTContract.balanceOf(address);
-    console.log(`Address: ${address} owns ${tokensOwned} Unicorns`);
+    // create uri for unicorn1
+    const uri = {
+        "name": "Unicorn",
+        "description": "Test Unicorn NFT",
+        "image": "https://gateway.pinata.cloud/ipfs/QmeZ8EJ6PTtdJcYPPvrbeRMvVAJV9azSuQcUgExwu4tp3C"
+    }
+
+    // mint
+    await UnicornNFTContract.safeMint(address, uri);
 }
 
 main()

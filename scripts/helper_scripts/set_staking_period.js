@@ -29,7 +29,7 @@ async function main() {
     const stakePeriod = 2 * 60;
     try {
         const tx = await DarkForestContract.setStakePeriodSeconds(stakePeriod);
-        console.log(`https://mumbai.polygonscan.com/${tx.hash}`)
+        console.log(`https://mumbai.polygonscan.com/tx/${tx.hash}`)
         await tx.wait();
     } catch (err) {
         console.error(err);

@@ -36,31 +36,45 @@ async function main() {
     const UnicornNFTContract = new ethers.Contract(UNICORN_NFT_CONTRACT, cryptoUnicornAbi, wallet);
 
     // check number of unicorns staked by address
-    console.log(`Number of Unicorns Staked (before unstaking): ${await DarkForestContract.numStaked(address)}`);
+    console.log(`Number of Unicorns Staked (check 1): ${await DarkForestContract.numStaked(address)}`);
 
     // confirm how many unicorns are owned by the address
     const tokensOwnedByAddress = await UnicornNFTContract.balanceOf(address);
-    console.log(`Address: ${address} owns ${tokensOwnedByAddress} Unicorn(s) before unstaking`);
+    console.log(`Address: ${address} owns ${tokensOwnedByAddress} Unicorn(s)`);
 
-    // get tokenId of staked Unicorn
-    const tokenId = await DarkForestContract.tokenOfStakerByIndex(address, 0);
-    console.log(`TokenId of staked Unicorn ${tokenId}`)
+    // find out tokenId of the 1st token
+    const tokenId = await UnicornNFTContract.tokenOfOwnerByIndex(address, 0);
+    console.log(`Token ID of 1st token owned by ${address}: ${tokenId} `)
 
-    console.log(`About to unstake tokenId "${tokenId}" from the DarkForest contract: ${DARK_FOREST_CONTRACT}`)
-    // unstake a unicorn
-    try {
-        const tx = await DarkForestContract.exitForest(tokenId);
-        console.log(`https://mumbai.polygonscan.com/${tx.hash}`)
-        await tx.wait();
-    } catch (err) {
-        console.error(err);
-    }
+    // console.log(`Gas price retrieved from config file: ${config.GAS_PRICE}`)
+    const gas_price = ethers.utils.parseUnits(String(40.0), 'gwei');
+    console.log(`Gas Price: ${gas_price}`)
+
+
+    // for ambiguous functions (two functions with the same name), the signature must also be specified
+    // message = await contract['getMessage(string)']('nice');
+
+    console.log(`Crytpo Unicorns contract address: ${await DarkForestContract.CryptoUnicornsAddress}`)
+
+    console.log(`About to ask the contract at ${UnicornNFTContract.address} to try and safeTransfer the ownership of tokenId ${tokenId} from ${address} to ${DARK_FOREST_CONTRACT}`)
+    //stake a unicorn
+    // try {
+    //     const tx = await UnicornNFTContract['safeTransferFrom(address,address,uint256,bytes)'](
+    //         address, // from
+    //         DARK_FOREST_CONTRACT, // to
+    //         tokenId, // tokenId
+    //         40000000000
+    //     );
+    //     console.log(`https://mumbai.polygonscan.com/tx/${tx.hash}`)
+    //     await tx.wait();
+    // } catch (err) {
+    //     console.error(err);
+    // }
+
+    
 
     // check number of unicorns staked by address
-    console.log(`Number of Unicorns Staked (after unstaking): ${await DarkForestContract.numStaked(address)}`);
-
-    // confirm how many unicorns are owned by the address
-    console.log(`Address: ${address} owns ${tokensOwnedByAddress} Unicorn(s) after unstaking`);
+    console.log(`Number of Unicorns Staked (check 2): ${await DarkForestContract.numStaked(address)}`);
 }
 
 main()
