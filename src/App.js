@@ -7,19 +7,15 @@ import cryptoUnicornAbiJson from "./contractABI/erc721ABI.json";
 
 const App = () => {
 
-  // const provider = await detectEthereumProvider();
-
   const [currentAccount, setCurrentAccount] = useState("");
+  const [intervalObject, setIntervalObject] = useState(null);
   const [autoStakeActive, setAutoStakeActive] = useState(false);
   const [buttonText, setbuttonText] = useState("Begin auto staking");
   const { ethereum } = window;
   const signer = ethereum.getSigner;
-
   const mumbaiChainId = "0x13881";
-  const DARK_FOREST_CONTRACT = "0xD1273B20a5d320f52A57200c4E301D08247C10B7";
-  const UNICORN_NFT_CONTRACT = "0x3C77b23c6303A20b5C72346Bc17FA16B0f950D35";
-
-  let intervalObject = null;
+  const DARK_FOREST_CONTRACT = "0xd4F109Ef933161A572f090fE3Dffe7e33814b9F6";
+  const UNICORN_NFT_CONTRACT = "0x81511Ab37A82fa9b917B98be86a881Dc6177B022";
   
   const checkIfWalletIsConnected = async () => {
 
@@ -116,12 +112,12 @@ const App = () => {
     setbuttonText("Auto staking active")
 
     const provider = new ethers.providers.Web3Provider(window.ethereum, "any");
-    const darkForestContract = new ethers.Contract(DARK_FOREST_CONTRACT, darkForestAbiJson, provider);
-    const unicornNFTContract = new ethers.Contract(UNICORN_NFT_CONTRACT, cryptoUnicornAbiJson, provider);
+    const signer = provider.getSigner();
+    const darkForestContract = new ethers.Contract(DARK_FOREST_CONTRACT, darkForestAbiJson, signer);
+    const unicornNFTContract = new ethers.Contract(UNICORN_NFT_CONTRACT, cryptoUnicornAbiJson, signer);
 
     const stakingPeriod = (await darkForestContract.stakePeriodSeconds()).toNumber();
-    // const interval = (stakingPeriod * 1000 ) + 60000; // +1 minute window to ensure the stakingPeriod has completed for all unicorns
-    const interval = 3000;
+    const interval = (stakingPeriod * 1000 ) + 60000; // +1 minute window to ensure the stakingPeriod has completed for all unicorns
     console.log(`interval: ${interval}`)
     console.log(`Staking Period defined in contract (seconds): ${stakingPeriod}`);
     console.log(`This script will unstake/restake every ${interval/1000} seconds`);
@@ -129,9 +125,10 @@ const App = () => {
     // perform once immediately
     autoStake(darkForestContract, unicornNFTContract)
     // the perform every interval
-    intervalObject = setInterval(() => {
+    const i = setInterval(() => {
         autoStake(darkForestContract, unicornNFTContract);
     }, interval);
+    setIntervalObject(i);
   }
 
   const autoStake = async (darkForestContract, unicornNFTContract) => {

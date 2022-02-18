@@ -17,7 +17,7 @@ async function main() {
 
     // define the test contract addresses
     const DARK_FOREST_CONTRACT = "0xD1273B20a5d320f52A57200c4E301D08247C10B7";
-    const UNICORN_NFT_CONTRACT = "0x3C77b23c6303A20b5C72346Bc17FA16B0f950D35";
+    const UNICORN_NFT_CONTRACT = "0x82a9Bc1900b2dD8ad8f2652D015A5FC311130293";
 
     // define contract abi's
     const darkForestAbi = darkForestAbiJson.abi;

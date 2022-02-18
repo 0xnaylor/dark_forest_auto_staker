@@ -13,7 +13,7 @@ async function main() {
     const wallet = new ethers.Wallet(process.env.PRIVATE_KEY, provider);
     const address = wallet.address;
     
-    const DARK_FOREST_CONTRACT = "0xD1273B20a5d320f52A57200c4E301D08247C10B7";
+    const DARK_FOREST_CONTRACT = "0xd4F109Ef933161A572f090fE3Dffe7e33814b9F6";
     const darkForestAbi = darkForestAbiJson.abi;
     const darkForestContract = new ethers.Contract(DARK_FOREST_CONTRACT, darkForestAbi, wallet);
 
