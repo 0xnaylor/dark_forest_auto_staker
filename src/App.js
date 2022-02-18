@@ -1,26 +1,48 @@
 import './styles/App.css';
 import React, { useEffect, useState } from "react";
 import { ethers } from "ethers";
+import Swal from 'sweetalert2'
+import darkForestAbiJson from "./contractABI/darkForestABI.json";
+import cryptoUnicornAbiJson from "./contractABI/erc721ABI.json";
 
 const App = () => {
+
+  // const provider = await detectEthereumProvider();
 
   const [currentAccount, setCurrentAccount] = useState("");
   const [autoStakeActive, setAutoStakeActive] = useState(false);
   const [buttonText, setbuttonText] = useState("Begin auto staking");
   const { ethereum } = window;
+  const signer = ethereum.getSigner;
+
+  const mumbaiChainId = "0x13881";
+  const DARK_FOREST_CONTRACT = "0xD1273B20a5d320f52A57200c4E301D08247C10B7";
+  const UNICORN_NFT_CONTRACT = "0x3C77b23c6303A20b5C72346Bc17FA16B0f950D35";
+
+  let intervalObject = null;
   
   const checkIfWalletIsConnected = async () => {
 
-    if(!ethereum) {
-      console.log("Make sure you have metamask");
-      return;
-    } else {
-      console.log("we have the ethereum object", ethereum);
-    }
+    checkMetamaskInstalled();
 
     // retrieve a list of accounts associated with the address.
     const accounts = await ethereum.request({method: 'eth_accounts'});
     handleAccountsChanged(accounts);
+  }
+
+  const checkMetamaskInstalled = () => {
+    if(!ethereum) {
+      console.log("Make sure you have metamask");
+      Swal.fire({
+        title: 'No Metamask Extension Detected',
+        text: 'visit: https://metamask.io/',
+        icon: 'error',
+        confirmButtonText: 'Cool'
+      })
+      return;
+    } else {
+      console.log("we have the ethereum object", ethereum);
+    }
   }
 
   // For now, 'eth_accounts' will continue to always return an array
@@ -35,8 +57,17 @@ const App = () => {
     }
   }
 
-  function connect() {
-    // mumbai chain 80001
+  const connect = async () => {
+    
+    checkMetamaskInstalled();
+
+    // check which network metamask is currently connected to:
+    const chainId = await ethereum.request({ method: 'eth_chainId' });
+    
+    if (chainId != mumbaiChainId) {
+      switchChain();
+    }
+
     console.log("connect called")
     ethereum
       .request({ method: 'eth_requestAccounts' })
@@ -52,16 +83,152 @@ const App = () => {
       });
   }
 
+  const switchChain = async () => {
+    try {
+      await ethereum.request({
+        method: 'wallet_switchEthereumChain',
+        params: [{ chainId: mumbaiChainId }],
+      });
+    } catch (switchError) {
+      // This error code indicates that the chain has not been added to MetaMask.
+      if (switchError.code === 4902) {
+        try {
+          await ethereum.request({
+            method: 'wallet_addEthereumChain',
+            params: [
+              {
+                chainId: mumbaiChainId,
+                chainName: 'Mumbai',
+                rpcUrls: ['https://rpc-mumbai.maticvigil.com'],
+              },
+            ],
+          });
+        } catch (addError) {
+          // handle "add" error
+        }
+      }
+      // handle other "switch" errors
+    }    
+  }
+
   const initiateAutoStake = async () => {
     setAutoStakeActive(true);
     setbuttonText("Auto staking active")
-    console.log("placeholder")
+
+    const provider = new ethers.providers.Web3Provider(window.ethereum, "any");
+    const darkForestContract = new ethers.Contract(DARK_FOREST_CONTRACT, darkForestAbiJson, provider);
+    const unicornNFTContract = new ethers.Contract(UNICORN_NFT_CONTRACT, cryptoUnicornAbiJson, provider);
+
+    const stakingPeriod = (await darkForestContract.stakePeriodSeconds()).toNumber();
+    // const interval = (stakingPeriod * 1000 ) + 60000; // +1 minute window to ensure the stakingPeriod has completed for all unicorns
+    const interval = 3000;
+    console.log(`interval: ${interval}`)
+    console.log(`Staking Period defined in contract (seconds): ${stakingPeriod}`);
+    console.log(`This script will unstake/restake every ${interval/1000} seconds`);
+
+    // perform once immediately
+    autoStake(darkForestContract, unicornNFTContract)
+    // the perform every interval
+    intervalObject = setInterval(() => {
+        autoStake(darkForestContract, unicornNFTContract);
+    }, interval);
+  }
+
+  const autoStake = async (darkForestContract, unicornNFTContract) => {
+    
+    const gas_price = ethers.utils.parseUnits(String(40.0), 'gwei');
+
+    let date = new Date();
+        console.log("*******************************************")
+        console.log(`Auto Stake Trigger ${date}`);
+
+        // find out how many unicorns the user has staked
+        const stakedUnicorns = (await darkForestContract.numStaked(currentAccount)).toNumber();
+        
+        // if user has unicorns staked, unstake them if possible
+        if (stakedUnicorns > 0) {
+            let unicorns = [];
+            console.log(`User has ${stakedUnicorns} unicorns staked in the Dark Forest contract`)
+            let count = 0;
+            for(let i = 0; i < stakedUnicorns; i++){
+                const tokenId = (await darkForestContract.tokenOfStakerByIndex(currentAccount, i)).toNumber();
+                const unstakedAt = (await darkForestContract.unstakesAt(tokenId)).toNumber();
+                const timeNow = Math.floor(Date.now() / 1000);
+                const canUnstake = timeNow > unstakedAt;
+
+                if (canUnstake) {
+                    count++
+                }
+
+                unicorns.push({
+                    i,
+                    tokenId,
+                    canUnstake
+                });
+            }
+            console.log(`${count} unicorns can be unstaked`)
+
+            for (let i = 0; i < stakedUnicorns; i++) {
+                const unicorn = unicorns[i];
+                if (unicorn.canUnstake) {
+                    console.log(`Unstaking Unicorn #${unicorn.tokenId}...`)
+                    // Unstake
+                    try {
+                        const tx = await darkForestContract.exitForest(unicorn.tokenId);
+                        console.log(`https://mumbai.polygonscan.com/tx/${tx.hash}`)
+                        await tx.wait();
+                    } catch (err) {
+                        console.error(err);
+                        process.exit(1);
+                    }
+                }
+            }
+            console.log(`Unstaking complete`)
+        } 
+        
+        // If the user has unicorns in their wallet, we assume they want to stake them.
+        const balanceOf = (await unicornNFTContract.balanceOf(currentAccount)).toNumber();
+
+        if (balanceOf > 0) {
+            let unicorns = [];
+            for (let i = 0; i < balanceOf; i++) {
+                const tokenId = (await unicornNFTContract.tokenOfOwnerByIndex(currentAccount, i)).toNumber();
+                unicorns.push({
+                    i,
+                    tokenId
+                })
+            }
+            console.log(`The user has ${unicorns.length} unicorns to stake`);
+
+            for (let i = 0; i < balanceOf; i++) {
+                const unicorn = unicorns[i];
+                console.log(`Staking Unicorn #${unicorn.tokenId}...`);
+                try {
+                    // Stake
+                    const tx = await unicornNFTContract['safeTransferFrom(address,address,uint256,bytes)'](
+                        currentAccount, // from
+                        DARK_FOREST_CONTRACT, // to
+                        unicorn.tokenId, // tokenId
+                        gas_price
+                    );
+                    console.log(`https://mumbai.polygonscan.com/tx/${tx.hash}`)
+                    await tx.wait();
+                } catch (err) {
+                    console.error(err);
+                    process.exit(1);
+                }
+            }
+            console.log(`Staking complete`)
+        } else {
+            console.log(`User has no unicorns to stake`)
+        }
   }
 
   const killProcess = () => {
     setAutoStakeActive(false);
     setbuttonText("Begin auto staking")
     console.log("kill process");
+    clearInterval(intervalObject);
   }
 
   useEffect(() => {
