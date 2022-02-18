@@ -5,6 +5,8 @@ import { ethers } from "ethers";
 const App = () => {
 
   const [currentAccount, setCurrentAccount] = useState("");
+  const [autoStakeActive, setAutoStakeActive] = useState(false);
+  const [buttonText, setbuttonText] = useState("Begin auto staking");
   const { ethereum } = window;
   
   const checkIfWalletIsConnected = async () => {
@@ -51,11 +53,19 @@ const App = () => {
   }
 
   const initiateAutoStake = async () => {
-    
+    setAutoStakeActive(true);
+    setbuttonText("Auto staking active")
     console.log("placeholder")
   }
 
+  const killProcess = () => {
+    setAutoStakeActive(false);
+    setbuttonText("Begin auto staking")
+    console.log("kill process");
+  }
+
   useEffect(() => {
+    console.log("useEffect called");
     // This runs our function when the page loads
     checkIfWalletIsConnected();
   }, [])
@@ -67,9 +77,19 @@ const App = () => {
   );
 
   const renderAutoStakeUI = () => (
-    <button onClick={initiateAutoStake} className="cta-button connect-wallet-button">
-      Auto Stake
-    </button>
+    <div>
+      <button onClick={initiateAutoStake} 
+              className={!autoStakeActive ? "cta-button connect-wallet-button" : "disabled-button"} 
+              disabled={autoStakeActive}>
+        {buttonText}
+      </button>
+      <br/><br/>
+      <button onClick={killProcess} 
+              className={!autoStakeActive ? "disabled-button" : "cta-button connect-wallet-button"}
+              disabled={!autoStakeActive}>
+        Cancel
+      </button>
+    </div>  
   )
 
   return (
