@@ -1,5 +1,4 @@
 const { ethers } = require("ethers");
-require("@nomiclabs/hardhat-ethers");
 const darkForestAbiJson = require("../artifacts/contracts/DarkForest.sol/DarkForest.json");
 const cryptoUnicornAbiJson = require("../artifacts/contracts/CryptoUnicorns.sol/CryptoUnicorns.json");
 require("dotenv").config();
@@ -16,8 +15,8 @@ async function main() {
     console.log("Your address: ", address);
 
     // define the test contract addresses
-    const DARK_FOREST_CONTRACT = "0xD1273B20a5d320f52A57200c4E301D08247C10B7";
-    const UNICORN_NFT_CONTRACT = "0x82a9Bc1900b2dD8ad8f2652D015A5FC311130293";
+    const DARK_FOREST_CONTRACT = "0xd4F109Ef933161A572f090fE3Dffe7e33814b9F6";
+    const UNICORN_NFT_CONTRACT = "0x81511Ab37A82fa9b917B98be86a881Dc6177B022";
 
     // define contract abi's
     const darkForestAbi = darkForestAbiJson.abi;
@@ -136,6 +135,4 @@ async function main() {
     }
 }
 
-export default main;
-
-// main();
+main();
