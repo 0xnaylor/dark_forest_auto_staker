@@ -9,7 +9,7 @@ module.exports = {
     logger: createLogger({
         level: 'info',
         format: combine(
-            label({ label: 'check_unicorn_balance' }),
+            label({ label: 'auto_staker' }),
             timestamp(),
             myFormat
         ),
