@@ -15,6 +15,10 @@ const address = wallet.address;
 const DARK_FOREST_CONTRACT = "0xd4F109Ef933161A572f090fE3Dffe7e33814b9F6";
 const UNICORN_NFT_CONTRACT = "0x81511Ab37A82fa9b917B98be86a881Dc6177B022";
 
+// prod contract addresses
+const MAINNET_DARK_FOREST_CONTRACT = "0x8d528e98A69FE27b11bb02Ac264516c4818C3942";
+const MAINNET_UNICORN_NFT_CONTRACT = "0xdC0479CC5BbA033B3e7De9F178607150B3AbCe1f";
+
 // create the contract objects
 const darkForestContract = new ethers.Contract(DARK_FOREST_CONTRACT, darkForestAbiJson, wallet);
 const unicornNFTContract = new ethers.Contract(UNICORN_NFT_CONTRACT, cryptoUnicornAbiJson, wallet);
@@ -22,9 +26,12 @@ const gas_price = ethers.utils.parseUnits(String(40.0), 'gwei');
 
 async function main() {
 
+    // retrieve staking period from contract (in seconds)
+    // currently set to 86400 seconds = 24 hours
     const stakingPeriod = (await darkForestContract.stakePeriodSeconds()).toNumber();
-    // interval needs to be in milliseconds
-    const interval = (stakingPeriod * 1000 ) + 60000; // +1 minute window to ensure the stakingPeriod has completed for all unicorns
+    
+    // convert to milliseconds and add 5 minutes (ensures the stakingPeriod has completed for all staked unicorns)
+    const interval = (stakingPeriod * 1000 ) + 300000;
     
     logger.info({message: `Your address: ${address}`});
     logger.info({message: `Interval: ${interval}`});
@@ -48,14 +55,14 @@ async function autoStake() {
     
     // if user has unicorns staked, unstake them if possible
     if (stakedUnicorns > 0) {
-        unstakeUnicorns(stakedUnicorns);
+        await unstakeUnicorns(stakedUnicorns);
     } 
     
     // If the user has unicorns in their wallet, we assume they want to stake them.
     const balanceOf = (await unicornNFTContract.balanceOf(address)).toNumber();
 
     if (balanceOf > 0) {
-        stakeUnicorns(balanceOf);
+        await stakeUnicorns(balanceOf);
     } else {
         logger.info({message: `User has no unicorns to stake`});
     }
@@ -102,6 +109,8 @@ async function unstakeUnicorns(stakedUnicorns) {
 }
 
 async function stakeUnicorns(balanceOf) {
+
+    console.log('stakeUnicorns function called')
     let unicorns = [];
     for (let i = 0; i < balanceOf; i++) {
         const tokenId = (await unicornNFTContract.tokenOfOwnerByIndex(address, i)).toNumber();
@@ -133,9 +142,4 @@ async function stakeUnicorns(balanceOf) {
     logger.info({message: `Staking complete`});
 }
 
-main();
-
-function sum(a, b) {
-    return a + b;
-}
-module.exports = sum;
+module.exports = main, stakeUnicorns;

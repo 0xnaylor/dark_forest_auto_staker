@@ -28,7 +28,7 @@
     "winston": "^3.6.0"
   },
   "scripts": {
-    "start": "node --experimental-json-modules scripts/auto_staker.js",
+    "start": "node --experimental-json-modules scripts/start.js",
     "rescue": "node --experimental-json-modules scripts/helper_scripts/rescue_unicorn.js",
     "balance": "node --experimental-json-modules scripts/helper_scripts/check_unicorn_balance.js",
     "test": "jest"

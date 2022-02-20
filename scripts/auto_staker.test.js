@@ -1,4 +1,4 @@
-// const sum = require("./auto_staker");
+const auto_staker = require("./auto_staker");
 const { ethers } = require("ethers");
 const crypto_unicorns_artifact = require("../artifacts/contracts/CryptoUnicorns.sol/CryptoUnicorns.json");
 const dark_forest_artifact = require("../artifacts/contracts/DarkForest.sol/DarkForest.json");
@@ -17,7 +17,7 @@ const UnicornNFTContract = new ethers.Contract(UNICORN_NFT_CONTRACT, CryptoUnico
 const DarkForestContract = new ethers.Contract(DARK_FOREST_CONTRACT, DarkForestAbiJson, wallet);
 
 // set default test timeout to 10 seconds
-jest.setTimeout(10000)
+jest.setTimeout(100000)
 
 
 // test('adds 1 + 2 to equal 3', () => {
@@ -43,40 +43,68 @@ jest.setTimeout(10000)
 //    the unStakeUnicorns function should unstake any unicorns
 //    This should result in wallet balance = 0, staked balance = 5
 
-// Helper functions required
 
-// check unicorn wallet balance
-// check staked balance
-// check staking interval
-// set staking interval
+// describe('test helper functions', () => {
 
-describe('test helper functions', () => {
+//     test('retrieves unicorn wallet balance', async () => {  
+//         const balance = await checkUnicornWalletBalance()
+//         console.log(`Unicorn wallet balance: ${balance}`)
+//     });
+    
+//     test('retrieves unicorn staked balance', async () => {  
+//         const balance = await checkUnicornStakedBalance()
+//         console.log(`Unicorn staked balance: ${balance}`)
+//     });
+    
+//     test('retrieves dark forest staking period', async () => {  
+//         const period = await checkStakingInterval()
+//         console.log(`Dark Forest Staking period: ${period}`)
+//     });
+    
+//     test('set dark forest staking period', async () => {  
+//         const currentStakingPeriod = await checkStakingInterval()
+//         console.log(`Dark Forest current staking period: ${currentStakingPeriod}`)
+    
+//         await setStakingPeriodSeconds(120);
+    
+//         expect((await checkStakingInterval()).toNumber()).toBe(120);
+//     });
+// })
 
-    test('retrieves unicorn wallet balance', async () => {  
-        const balance = await checkUnicornWalletBalance()
-        console.log(`Unicorn wallet balance: ${balance}`)
-    });
+describe('Test staking', () => {
+
+    beforeAll(async () => {
+        await unstakeAllUnicorns();
+    })
+
+    test('stake all unicorns', done => {
+
+        const oldWalletBalance = await checkUnicornWalletBalance();
+        const oldStakedBalance = await checkUnicornStakedBalance();
+
+        console.log(`oldWalletBalance: ${oldWalletBalance}`)
+        console.log(`oldStakedBalance: ${oldStakedBalance}`)
+        
+        try {
+            const result = await auto_staker.stakeUnicorns(oldWalletBalance);
+            console.log(`result: ${result}`)
+            done();
+        } catch (err) {
+            done(err)
+        }
+       
+        // const newWalletBalance = await checkUnicornWalletBalance();
+        // const newStakedBalance = await checkUnicornStakedBalance();
+        // console.log(`newWalletBalance: ${newWalletBalance}`)
+        // console.log(`newStakedBalance: ${newStakedBalance}`)
+        });
+
+        
     
-    test('retrieves unicorn staked balance', async () => {  
-        const balance = await checkUnicornStakedBalance()
-        console.log(`Unicorn staked balance: ${balance}`)
-    });
+        // expect(newStakedBalance).toEqual(oldWalletBalance);
+        // expect(newWalletBalance).toEqual(oldStakedBalance);
     
-    test('retrieves dark forest staking period', async () => {  
-        const period = await checkStakingInterval()
-        console.log(`Dark Forest Staking period: ${period}`)
-    });
-    
-    test('set dark forest staking period', async () => {  
-        const currentStakingPeriod = await checkStakingInterval()
-        console.log(`Dark Forest current staking period: ${currentStakingPeriod}`)
-    
-        await setStakingPeriodSeconds(120);
-    
-        expect((await checkStakingInterval()).toNumber()).toBe(120);
-    });
 })
-
 
 
 
@@ -100,4 +128,22 @@ async function setStakingPeriodSeconds(period) {
     } catch (err) {
         console.error(err);
     }
+}
+
+async function unstakeAllUnicorns() {
+    const stakedUnicorns = await checkUnicornStakedBalance();
+    if (stakedUnicorns > 0) {
+        for (let i = 0; i < stakedUnicorns; i++) {
+            const tokenId = await DarkForestContract.tokenOfStakerByIndex(address, 0);
+            console.log(`About to rescue tokenId "${tokenId}" from the DarkForest contract: ${DARK_FOREST_CONTRACT}`)
+            // unstake a unicorn
+            try {
+              const tx = await DarkForestContract.rescueUnicorn(tokenId);
+              await tx.wait();
+            } catch (err) {
+              console.error(err);
+            }
+          }
+        }
+    console.log(`Unstaking complete`)
 }
