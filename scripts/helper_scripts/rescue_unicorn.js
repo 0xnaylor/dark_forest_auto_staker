@@ -1,6 +1,5 @@
 const config = require("../../config.js");
 const { ethers } = require("ethers");
-require("@nomiclabs/hardhat-ethers");
 const darkForestAbiJson = require("../../artifacts/contracts/DarkForest.sol/DarkForest.json");
 const cryptoUnicornAbiJson = require("../../artifacts/contracts/CryptoUnicorns.sol/CryptoUnicorns.json");
 const dotenv = require("dotenv");

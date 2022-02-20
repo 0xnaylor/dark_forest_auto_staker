@@ -2,8 +2,17 @@ const { ethers } = require("ethers");
 require("@nomiclabs/hardhat-ethers");
 const dark_forest_artifact = require("../../artifacts/contracts/DarkForest.sol/DarkForest.json");
 require("dotenv").config();
+// const fs = require('fs');
+// const { stdout, stderr } = require("process");
 
 async function main() {
+
+    // const logfile = fs.createWriteStream('./unicorn_auto_staker.log', { flags: 'a' });
+    // // redirect stdout / stderr
+    // stdout.pipe(logfile);
+    // stderr.pipe(logfile);
+
+
     console.log("Running stake_unicorn script");
 
     // get json rpc provider for mumbai testnet

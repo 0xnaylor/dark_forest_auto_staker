@@ -1,10 +1,9 @@
 const { ethers } = require("ethers");
-require("@nomiclabs/hardhat-ethers");
 const crypto_unicorns_artifact = require("../../artifacts/contracts/CryptoUnicorns.sol/CryptoUnicorns.json");
-
 require("dotenv").config();
 
 async function main() {
+
     console.log("Running check_unicorn_balance script");
 
     const provider = new ethers.providers.JsonRpcProvider("https://rpc-mumbai.matic.today", 80001);

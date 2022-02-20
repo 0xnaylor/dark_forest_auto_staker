@@ -2,8 +2,15 @@ const { ethers } = require("ethers");
 const darkForestAbiJson = require("../abi/darkforest_abi.json");
 const cryptoUnicornAbiJson = require("../abi/cryptoUnicornAbi.json");
 require("dotenv").config();
+const fs = require('fs');
+const logger = require("./utils/logger.js").logger;
 
 async function main() {
+
+    
+    logger.info({
+        message: 'logger test',
+    });
 
     // get json rpc provider for mumbai testnet
     const provider = new ethers.providers.JsonRpcProvider("https://rpc-mumbai.matic.today", 80001);
@@ -12,7 +19,8 @@ async function main() {
     const wallet = new ethers.Wallet(process.env.PRIVATE_KEY, provider);
     const address = wallet.address;
     
-    console.log("Your address: ", address);
+    // console.log("Your address: ", address);
+    logger.info({message: `Your address: ${address}`});
 
     // define the test contract addresses
     const DARK_FOREST_CONTRACT = "0xd4F109Ef933161A572f090fE3Dffe7e33814b9F6";
@@ -32,10 +40,13 @@ async function main() {
     // interval needs to be in milliseconds
     const interval = (stakingPeriod * 1000 ) + 60000; // +1 minute window to ensure the stakingPeriod has completed for all unicorns
 
-    console.log(`interval: ${interval}`)
+    // console.log(`interval: ${interval}`)
+    logger.info({message: `Interval: ${interval}`});
 
-    console.log(`Staking Period defined in contract (seconds): ${stakingPeriod}`);
-    console.log(`This script will unstake/restake every ${interval/1000} seconds`);
+    // console.log(`Staking Period defined in contract (seconds): ${stakingPeriod}`);
+    // console.log(`This script will unstake/restake every ${interval/1000} seconds`);
+    logger.info({message: `Staking Period defined in contract (seconds): ${stakingPeriod}`});
+    logger.info({message: `This script will unstake/restake every ${interval/1000} seconds`});
 
     // perform once immediately
     autoStake()
@@ -49,8 +60,9 @@ async function main() {
     
     async function autoStake() {
         let date = new Date();
-        console.log("*******************************************")
-        console.log(`Auto Stake Trigger ${date}`);
+        // console.log("*******************************************")
+        // console.log(`Auto Stake Trigger ${date}`);
+        logger.info({message: `Auto Stake Trigger - ${date}`});
 
         // find out how many unicorns the user has staked
         const stakedUnicorns = (await darkForestContract.numStaked(address)).toNumber();
@@ -58,7 +70,8 @@ async function main() {
         // if user has unicorns staked, unstake them if possible
         if (stakedUnicorns > 0) {
             let unicorns = [];
-            console.log(`User has ${stakedUnicorns} unicorns staked in the Dark Forest contract`)
+            // console.log(`User has ${stakedUnicorns} unicorns staked in the Dark Forest contract`)
+            logger.info({message: `User has ${stakedUnicorns} unicorns staked in the Dark Forest contract`});
             let count = 0;
             for(i = 0; i < stakedUnicorns; i++){
                 const tokenId = (await darkForestContract.tokenOfStakerByIndex(address, i)).toNumber();
@@ -76,24 +89,29 @@ async function main() {
                     canUnstake
                 });
             }
-            console.log(`${count} unicorns can be unstaked`)
+            // console.log(`${count} unicorns can be unstaked`)
+            logger.info({message: `${count} unicorns can be unstaked`});
 
             for (let i = 0; i < stakedUnicorns; i++) {
                 const unicorn = unicorns[i];
                 if (unicorn.canUnstake) {
-                    console.log(`Unstaking Unicorn #${unicorn.tokenId}...`)
+                    // console.log(`Unstaking Unicorn #${unicorn.tokenId}...`)
+                    logger.info({message: `Unstaking Unicorn #${unicorn.tokenId}...`});
                     // Unstake
                     try {
                         const tx = await darkForestContract.exitForest(unicorn.tokenId);
-                        console.log(`https://mumbai.polygonscan.com/tx/${tx.hash}`)
+                        // console.log(`https://mumbai.polygonscan.com/tx/${tx.hash}`)
+                        logger.info({message: `https://mumbai.polygonscan.com/tx/${tx.hash}`});
                         await tx.wait();
                     } catch (err) {
-                        console.error(err);
+                        // console.error(err);
+                        logger.info({message: err});
                         process.exit(1);
                     }
                 }
             }
-            console.log(`Unstaking complete`)
+            // console.log(`Unstaking complete`)
+            logger.info({message: `Unstaking complete`});
         } 
         
         // If the user has unicorns in their wallet, we assume they want to stake them.
@@ -108,11 +126,13 @@ async function main() {
                     tokenId
                 })
             }
-            console.log(`The user has ${unicorns.length} unicorns to stake`);
+            // console.log(`The user has ${unicorns.length} unicorns to stake`);
+            logger.info({message: `The user has ${unicorns.length} unicorns to stake`});
 
             for (let i = 0; i < balanceOf; i++) {
                 const unicorn = unicorns[i];
-                console.log(`Staking Unicorn #${unicorn.tokenId}...`);
+                // console.log(`Staking Unicorn #${unicorn.tokenId}...`);
+                logger.info({message: `Staking Unicorn #${unicorn.tokenId}...`});
                 try {
                     // Stake
                     const tx = await unicornNFTContract['safeTransferFrom(address,address,uint256,bytes)'](
@@ -121,29 +141,22 @@ async function main() {
                         unicorn.tokenId, // tokenId
                         gas_price
                     );
-                    console.log(`https://mumbai.polygonscan.com/tx/${tx.hash}`)
+                    // console.log(`https://mumbai.polygonscan.com/tx/${tx.hash}`)
+                    logger.info({message: `https://mumbai.polygonscan.com/tx/${tx.hash}`});
                     await tx.wait();
                 } catch (err) {
-                    console.error(err);
+                    // console.error(err);
+                    logger.info({message: err});
                     process.exit(1);
                 }
             }
-            console.log(`Staking complete`)
+            // console.log(`Staking complete`)
+            logger.info({message: `Staking complete`});
         } else {
-            console.log(`User has no unicorns to stake`)
+            // console.log(`User has no unicorns to stake`)
+            logger.info({message: `User has no unicorns to stake`});
         }
     }
 }
-
-function writeFile(str) {
-
-    var fh = fopen("C:\development\bitkraft\dark_forest_auto_staker\logs\autostake_log.txt", 3); // Open the file for writing
-  
-    if(fh!=-1) {
-        fwrite(fh, str); // Write the string to a file
-        fclose(fh); // Close the file
-    }
-  
-  }
 
 main();

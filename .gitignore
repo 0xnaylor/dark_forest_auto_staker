@@ -1,3 +1,5 @@
+/scripts/daemon/
+/logs
 node_modules
 .env
 coverage
