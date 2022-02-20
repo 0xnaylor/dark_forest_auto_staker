@@ -135,4 +135,15 @@ async function main() {
     }
 }
 
+function writeFile(str) {
+
+    var fh = fopen("C:\development\bitkraft\dark_forest_auto_staker\logs\autostake_log.txt", 3); // Open the file for writing
+  
+    if(fh!=-1) {
+        fwrite(fh, str); // Write the string to a file
+        fclose(fh); // Close the file
+    }
+  
+  }
+
 main();

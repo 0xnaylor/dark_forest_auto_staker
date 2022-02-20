@@ -14,7 +14,7 @@ async function main() {
     const address = wallet.address;
 
     // define the test contract addresses
-    const DARK_FOREST_CONTRACT = "0xD1273B20a5d320f52A57200c4E301D08247C10B7";
+    const DARK_FOREST_CONTRACT = "0xd4F109Ef933161A572f090fE3Dffe7e33814b9F6";
 
     // define contract abi's
     const DarkForestAbiJson = dark_forest_artifact.abi;
