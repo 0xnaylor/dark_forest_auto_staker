@@ -10,11 +10,6 @@ dotenv.config();
 async function main() {
     console.log("Running rescue_unicorn script");
 
-    // wallet address: 0x8626f6940E2eb28930eFb4CeF49B2d1F2C9C1199
-    // Crypto Unicorns address: 0x3C77b23c6303A20b5C72346Bc17FA16B0f950D35
-    // Unicorn Milk address: 0xB32e4d12D2733FE7711ba7EdFd2686D0829CF2E1
-    // DarkForest deployed to: 0xD1273B20a5d320f52A57200c4E301D08247C10B7
-
     // get json rpc provider for mumbai testnet
     const provider = new ethers.providers.JsonRpcProvider("https://rpc-mumbai.matic.today", 80001);
 
@@ -42,19 +37,22 @@ async function main() {
     console.log(`Address: ${address} owns ${tokensOwnedByAddress} Unicorn(s) before rescue`);
 
     // get tokenId of staked Unicorn
-    const tokenId = await DarkForestContract.tokenOfStakerByIndex(address, 0);
-    console.log(`TokenId of staked Unicorn ${tokenId}`)
+   
 
-    console.log(`About to rescue tokenId "${tokenId}" from the DarkForest contract: ${DARK_FOREST_CONTRACT}`)
-    // unstake a unicorn
-    try {
+    const stakedUnicorns = (await DarkForestContract.numStaked(address)).toNumber();
+    for (let i = 0; i < stakedUnicorns; i++) {
+      const tokenId = await DarkForestContract.tokenOfStakerByIndex(address, 0);
+      console.log(`About to rescue tokenId "${tokenId}" from the DarkForest contract: ${DARK_FOREST_CONTRACT}`)
+      // unstake a unicorn
+      try {
         const tx = await DarkForestContract.rescueUnicorn(tokenId);
         console.log(`https://mumbai.polygonscan.com/tx/${tx.hash}`)
         await tx.wait();
-    } catch (err) {
+      } catch (err) {
         console.error(err);
+      }
     }
-
+    
     // check number of unicorns staked by address
     console.log(`Number of Unicorns Staked (after unstaking): ${await DarkForestContract.numStaked(address)}`);
 

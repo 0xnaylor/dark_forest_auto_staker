@@ -1,6 +1,6 @@
 const { ethers } = require("ethers");
 require("@nomiclabs/hardhat-ethers");
-const darkForestAbiJson = require("../artifacts/contracts/DarkForest.sol/DarkForest.json");
+const darkForestAbiJson = require("../../abi/darkforest_abi.json");
 require("dotenv").config();
 
 async function main() {
@@ -16,17 +16,14 @@ async function main() {
     // define the test contract addresses
     const DARK_FOREST_CONTRACT = "0xd4F109Ef933161A572f090fE3Dffe7e33814b9F6";
 
-    // define contract abi's
-    const DarkForestAbiJson = darkForestAbiJson.abi;
-
     // create the contract objects
-    const DarkForestContract = new ethers.Contract(DARK_FOREST_CONTRACT, DarkForestAbiJson, wallet);
+    const DarkForestContract = new ethers.Contract(DARK_FOREST_CONTRACT, darkForestAbiJson, wallet);
 
     // check current stake period
     console.log(`Unicorns are currently staked for ${await DarkForestContract.stakePeriodSeconds()} seconds`)
 
-    // set new stake period of 2 minutes (in seconds)
-    const stakePeriod = 2 * 60;
+    // set new stake period of  hour (in seconds)
+    const stakePeriod = 60 * 60;
     try {
         const tx = await DarkForestContract.setStakePeriodSeconds(stakePeriod);
         console.log(`https://mumbai.polygonscan.com/tx/${tx.hash}`)
@@ -37,9 +34,6 @@ async function main() {
 
     // check current stake period
     console.log(`Unicorns are currently staked for ${await DarkForestContract.stakePeriodSeconds()} seconds`)
-
-
-
 }
 
 main()

@@ -1,6 +1,6 @@
 const { ethers } = require("ethers");
-const darkForestAbiJson = require("../artifacts/contracts/DarkForest.sol/DarkForest.json");
-const cryptoUnicornAbiJson = require("../artifacts/contracts/CryptoUnicorns.sol/CryptoUnicorns.json");
+const darkForestAbiJson = require("../abi/darkforest_abi.json");
+const cryptoUnicornAbiJson = require("../abi/cryptoUnicornAbi.json");
 require("dotenv").config();
 
 async function main() {
@@ -19,12 +19,12 @@ async function main() {
     const UNICORN_NFT_CONTRACT = "0x81511Ab37A82fa9b917B98be86a881Dc6177B022";
 
     // define contract abi's
-    const darkForestAbi = darkForestAbiJson.abi;
-    const cryptoUnicornAbi = cryptoUnicornAbiJson.abi;
+    // const darkForestAbi = darkForestAbiJson.abi;
+    // const cryptoUnicornAbi = cryptoUnicornAbiJson.abi;
 
     // create the contract objects
-    const darkForestContract = new ethers.Contract(DARK_FOREST_CONTRACT, darkForestAbi, wallet);
-    const unicornNFTContract = new ethers.Contract(UNICORN_NFT_CONTRACT, cryptoUnicornAbi, wallet);
+    const darkForestContract = new ethers.Contract(DARK_FOREST_CONTRACT, darkForestAbiJson, wallet);
+    const unicornNFTContract = new ethers.Contract(UNICORN_NFT_CONTRACT, cryptoUnicornAbiJson, wallet);
 
     const gas_price = ethers.utils.parseUnits(String(40.0), 'gwei');
     

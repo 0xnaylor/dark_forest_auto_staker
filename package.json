@@ -25,7 +25,8 @@
     "sweetalert2": "^11.4.0"
   },
   "scripts": {
-    "start": "node --experimental-json-modules scripts/auto_staker.js"
+    "start": "node --experimental-json-modules scripts/auto_staker.js",
+    "rescue": "node --experimental-json-modules scripts/helper_scripts/rescue_unicorns.js"
   },
   "eslintConfig": {
     "extends": [
