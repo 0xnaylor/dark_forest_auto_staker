@@ -79,4 +79,4 @@ https://polygonscan.com/address/0x8d528e98A69FE27b11bb02Ac264516c4818C3942#code
 
 ## Other Notes
 
-There is also a react front end in this project as I was experimenting to see if metamask could be used to log into the 
+There is also a react front end in this project as I was experimenting to see if metamask could be used as a signer for these transactions. However, by design, metamask requires manual intervention for every transaction so was unsuitable for this project. I have left it in so I can use it as a reference for other projects. 
