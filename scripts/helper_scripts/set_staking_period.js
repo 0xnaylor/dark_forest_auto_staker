@@ -22,8 +22,8 @@ async function main() {
     // check current stake period
     console.log(`Unicorns are currently staked for ${await DarkForestContract.stakePeriodSeconds()} seconds`)
 
-    // set new stake period of 1 minute (in seconds)
-    const stakePeriod = 1 * 60;
+    // set new stake period of 1 hour (in seconds)
+    const stakePeriod = 60 * 60;
     try {
         const tx = await DarkForestContract.setStakePeriodSeconds(stakePeriod);
         console.log(`https://mumbai.polygonscan.com/tx/${tx.hash}`)

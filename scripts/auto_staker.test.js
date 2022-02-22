@@ -1,4 +1,4 @@
-const auto_staker = require("./auto_staker");
+const stake = require("./auto_staker");
 const { ethers } = require("ethers");
 const crypto_unicorns_artifact = require("../artifacts/contracts/CryptoUnicorns.sol/CryptoUnicorns.json");
 const dark_forest_artifact = require("../artifacts/contracts/DarkForest.sol/DarkForest.json");
@@ -6,15 +6,24 @@ const dark_forest_artifact = require("../artifacts/contracts/DarkForest.sol/Dark
 require("dotenv").config();
 
 
-const provider = new ethers.providers.JsonRpcProvider("https://rpc-mumbai.matic.today", 80001);
-const wallet = new ethers.Wallet(process.env.PRIVATE_KEY, provider);
-const address = wallet.address;
-const UNICORN_NFT_CONTRACT = "0x81511Ab37A82fa9b917B98be86a881Dc6177B022";
-const DARK_FOREST_CONTRACT = "0xd4F109Ef933161A572f090fE3Dffe7e33814b9F6";
+// const provider = new ethers.providers.JsonRpcProvider("https://rpc-mumbai.matic.today", 80001);
+const provider = new ethers.providers.JsonRpcProvider();
+const signer = provider.getSigner();
+let address;
+// const wallet = new ethers.Wallet(process.env.PRIVATE_KEY, provider);
+
+// test environment
+const MUMBAI_UNICORN_NFT_CONTRACT = "0x81511Ab37A82fa9b917B98be86a881Dc6177B022";
+const MUMBAI_DARK_FOREST_CONTRACT = "0xd4F109Ef933161A572f090fE3Dffe7e33814b9F6";
+// local development environment
+const DEV_DARK_FOREST_CONTRACT = "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0";
+const DEV_UNICORN_NFT_CONTRACT = "0x5FbDB2315678afecb367f032d93F642f64180aa3";
+
+
 const CryptoUnicornAbiJson = crypto_unicorns_artifact.abi;
 const DarkForestAbiJson = dark_forest_artifact.abi;
-const UnicornNFTContract = new ethers.Contract(UNICORN_NFT_CONTRACT, CryptoUnicornAbiJson, wallet);
-const DarkForestContract = new ethers.Contract(DARK_FOREST_CONTRACT, DarkForestAbiJson, wallet);
+const UnicornNFTContract = new ethers.Contract(DEV_UNICORN_NFT_CONTRACT, CryptoUnicornAbiJson, signer);
+const DarkForestContract = new ethers.Contract(DEV_DARK_FOREST_CONTRACT, DarkForestAbiJson, signer);
 
 // set default test timeout to 10 seconds
 jest.setTimeout(100000)
@@ -43,6 +52,9 @@ jest.setTimeout(100000)
 //    the unStakeUnicorns function should unstake any unicorns
 //    This should result in wallet balance = 0, staked balance = 5
 
+beforeAll(async() => {
+    address = await signer.getAddress();
+});
 
 // describe('test helper functions', () => {
 
@@ -77,36 +89,80 @@ describe('Test staking', () => {
         await unstakeAllUnicorns();
     })
 
-    test('stake all unicorns', done => {
+    // test('stake all unicorns', async () => {
 
+    //     const oldWalletBalance = await checkUnicornWalletBalance();
+    //     const oldStakedBalance = await checkUnicornStakedBalance();
+
+    //     console.log(`oldWalletBalance: ${oldWalletBalance}`)
+    //     console.log(`oldStakedBalance: ${oldStakedBalance}`)
+        
+    //     await stakeUnicorns(oldWalletBalance)
+    //     const newWalletBalance = await checkUnicornWalletBalance();
+    //     const newStakedBalance = await checkUnicornStakedBalance();
+    //     console.log(`newWalletBalance: ${newWalletBalance}`)
+    //     console.log(`newStakedBalance: ${newStakedBalance}`)
+     
+
+    //     // expect(newStakedBalance).toEqual(oldWalletBalance);
+    //     // expect(newWalletBalance).toEqual(oldStakedBalance);
+    
+    // });
+
+    test('stake unicorn ', async () => {
+        
+        
+        let tokenId;
+
+        if (await checkUnicornWalletBalance() > 0) {
+            tokenId = (await UnicornNFTContract.tokenOfOwnerByIndex(address, 0)).toNumber();
+        } else {
+            await mintUnicorn(address)
+        }
+        
         const oldWalletBalance = await checkUnicornWalletBalance();
         const oldStakedBalance = await checkUnicornStakedBalance();
 
         console.log(`oldWalletBalance: ${oldWalletBalance}`)
         console.log(`oldStakedBalance: ${oldStakedBalance}`)
         
-        try {
-            const result = await auto_staker.stakeUnicorns(oldWalletBalance);
-            console.log(`result: ${result}`)
-            done();
-        } catch (err) {
-            done(err)
-        }
-       
+        await stake(tokenId);
+        const newStakedBalance = setTimeout(checkUnicornStakedBalance, 10000);
+        // const balance = await checkUnicornStakedBalance();
+        // console.log(`staked balance: ${balance}`);
+  
         // const newWalletBalance = await checkUnicornWalletBalance();
         // const newStakedBalance = await checkUnicornStakedBalance();
         // console.log(`newWalletBalance: ${newWalletBalance}`)
-        // console.log(`newStakedBalance: ${newStakedBalance}`)
-        });
+        console.log(`newStakedBalance: ${newStakedBalance}`)
+     
 
-        
+        expect(newStakedBalance).toEqual(oldWalletBalance);
+        expect(newWalletBalance).toEqual(oldStakedBalance);
     
-        // expect(newStakedBalance).toEqual(oldWalletBalance);
-        // expect(newWalletBalance).toEqual(oldStakedBalance);
-    
+    });
 })
 
+const flushPromises = () => new Promise(setImmediate)
 
+async function mintUnicorn(address) {
+    // create uri for unicorn1
+    const uri = {
+        "name": "Unicorn",
+        "description": "Test Unicorn NFT",
+        "image": "https://gateway.pinata.cloud/ipfs/QmeZ8EJ6PTtdJcYPPvrbeRMvVAJV9azSuQcUgExwu4tp3C"
+    }
+
+    // mint
+    try {
+      const tx = await UnicornNFTContract.safeMint(address, uri);
+      await tx.wait();
+      console.log(`Unicorn minted`)
+  } catch (err) {
+      console.error(err);
+      process.exit(1);
+  }
+}
 
 async function checkUnicornWalletBalance() {
     return await UnicornNFTContract.balanceOf(address);
@@ -116,9 +172,9 @@ async function checkUnicornStakedBalance() {
     return await DarkForestContract.numStaked(address);
 }
 
-async function checkStakingInterval() {
-    return await DarkForestContract.stakePeriodSeconds();
-}
+// async function checkStakingInterval() {
+//     return await DarkForestContract.stakePeriodSeconds();
+// }
 
 async function setStakingPeriodSeconds(period) {
     try {
@@ -135,7 +191,7 @@ async function unstakeAllUnicorns() {
     if (stakedUnicorns > 0) {
         for (let i = 0; i < stakedUnicorns; i++) {
             const tokenId = await DarkForestContract.tokenOfStakerByIndex(address, 0);
-            console.log(`About to rescue tokenId "${tokenId}" from the DarkForest contract: ${DARK_FOREST_CONTRACT}`)
+            console.log(`About to rescue tokenId "${tokenId}" from the DarkForest contract: ${DEV_DARK_FOREST_CONTRACT}`)
             // unstake a unicorn
             try {
               const tx = await DarkForestContract.rescueUnicorn(tokenId);
