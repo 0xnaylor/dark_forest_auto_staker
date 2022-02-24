@@ -5,7 +5,6 @@ const dark_forest_artifact = require("../artifacts/contracts/DarkForest.sol/Dark
 
 require("dotenv").config();
 
-
 // const provider = new ethers.providers.JsonRpcProvider("https://rpc-mumbai.matic.today", 80001);
 const provider = new ethers.providers.JsonRpcProvider();
 const signer = provider.getSigner();
@@ -28,11 +27,6 @@ const DarkForestContract = new ethers.Contract(DEV_DARK_FOREST_CONTRACT, DarkFor
 // set default test timeout to 10 seconds
 jest.setTimeout(100000)
 
-
-// test('adds 1 + 2 to equal 3', () => {
-//   expect(sum(1, 2)).toBe(3);
-// });
-
 // scenarios to test
 
 // 1. Staking
@@ -53,97 +47,56 @@ jest.setTimeout(100000)
 //    This should result in wallet balance = 0, staked balance = 5
 
 beforeAll(async() => {
-    address = await signer.getAddress();
+    address = await signer.getAddress(); 
 });
-
-// describe('test helper functions', () => {
-
-//     test('retrieves unicorn wallet balance', async () => {  
-//         const balance = await checkUnicornWalletBalance()
-//         console.log(`Unicorn wallet balance: ${balance}`)
-//     });
-    
-//     test('retrieves unicorn staked balance', async () => {  
-//         const balance = await checkUnicornStakedBalance()
-//         console.log(`Unicorn staked balance: ${balance}`)
-//     });
-    
-//     test('retrieves dark forest staking period', async () => {  
-//         const period = await checkStakingInterval()
-//         console.log(`Dark Forest Staking period: ${period}`)
-//     });
-    
-//     test('set dark forest staking period', async () => {  
-//         const currentStakingPeriod = await checkStakingInterval()
-//         console.log(`Dark Forest current staking period: ${currentStakingPeriod}`)
-    
-//         await setStakingPeriodSeconds(120);
-    
-//         expect((await checkStakingInterval()).toNumber()).toBe(120);
-//     });
-// })
 
 describe('Test staking', () => {
 
+    let address;
+
     beforeAll(async () => {
+        address = await signer.getAddress();
+        console.log(`beforeAll address: ${address}`)
         await unstakeAllUnicorns();
     })
 
-    // test('stake all unicorns', async () => {
-
-    //     const oldWalletBalance = await checkUnicornWalletBalance();
-    //     const oldStakedBalance = await checkUnicornStakedBalance();
-
-    //     console.log(`oldWalletBalance: ${oldWalletBalance}`)
-    //     console.log(`oldStakedBalance: ${oldStakedBalance}`)
-        
-    //     await stakeUnicorns(oldWalletBalance)
-    //     const newWalletBalance = await checkUnicornWalletBalance();
-    //     const newStakedBalance = await checkUnicornStakedBalance();
-    //     console.log(`newWalletBalance: ${newWalletBalance}`)
-    //     console.log(`newStakedBalance: ${newStakedBalance}`)
-     
-
-    //     // expect(newStakedBalance).toEqual(oldWalletBalance);
-    //     // expect(newWalletBalance).toEqual(oldStakedBalance);
-    
-    // });
-
     test('stake unicorn ', async () => {
         
-        
         let tokenId;
+        console.log`wallet address being used for "stake unicorn" test: ${address}`
 
-        if (await checkUnicornWalletBalance() > 0) {
+        const currentUnicornBalance = (await UnicornNFTContract.balanceOf(address)).toNumber();
+        if (currentUnicornBalance > 0) {
             tokenId = (await UnicornNFTContract.tokenOfOwnerByIndex(address, 0)).toNumber();
         } else {
             await mintUnicorn(address)
         }
         
-        const oldWalletBalance = await checkUnicornWalletBalance();
-        const oldStakedBalance = await checkUnicornStakedBalance();
+        const oldWalletBalance = (await UnicornNFTContract.balanceOf(address)).toNumber();
+        const oldStakedBalance = (await DarkForestContract.numStaked(address)).toNumber();
 
         console.log(`oldWalletBalance: ${oldWalletBalance}`)
         console.log(`oldStakedBalance: ${oldStakedBalance}`)
         
-        await stake(tokenId);
-        const newStakedBalance = setTimeout(checkUnicornStakedBalance, 10000);
-        // const balance = await checkUnicornStakedBalance();
-        // console.log(`staked balance: ${balance}`);
-  
-        // const newWalletBalance = await checkUnicornWalletBalance();
-        // const newStakedBalance = await checkUnicornStakedBalance();
-        // console.log(`newWalletBalance: ${newWalletBalance}`)
-        console.log(`newStakedBalance: ${newStakedBalance}`)
-     
-
-        expect(newStakedBalance).toEqual(oldWalletBalance);
-        expect(newWalletBalance).toEqual(oldStakedBalance);
     
+        stake(tokenId, address).then(async () => { 
+            const newWalletBalance = (await UnicornNFTContract.balanceOf(address)).toNumber();
+            const newStakedBalance = (await DarkForestContract.numStaked(address)).toNumber();
+    
+            console.log(`newWalletBalance: ${newWalletBalance}`)
+            console.log(`newStakedBalance: ${newStakedBalance}`)
+            
+            expect(newStakedBalance).toEqual(oldWalletBalance);
+            expect(newWalletBalance).toEqual(oldStakedBalance);
+        })
+
+        // wait(10000);
+
+   
+      
+
     });
 })
-
-const flushPromises = () => new Promise(setImmediate)
 
 async function mintUnicorn(address) {
     // create uri for unicorn1
@@ -164,17 +117,19 @@ async function mintUnicorn(address) {
   }
 }
 
-async function checkUnicornWalletBalance() {
-    return await UnicornNFTContract.balanceOf(address);
-}
-
-async function checkUnicornStakedBalance() {
-    return await DarkForestContract.numStaked(address);
-}
-
-// async function checkStakingInterval() {
-//     return await DarkForestContract.stakePeriodSeconds();
+// const checkUnicornWalletBalance = async (account) => {
+//     console.log(`checkUnicornWalletBalance called for address: ${account}`)
+//     return await UnicornNFTContract.balanceOf(account);
 // }
+
+// async function checkUnicornStakedBalance(_address) {
+//     console.log(`checkUnicornStakedBalance called for address: ${_address}`)
+//     return await DarkForestContract.numStaked(_address);
+// }
+
+async function checkStakingInterval() {
+    return await DarkForestContract.stakePeriodSeconds();
+}
 
 async function setStakingPeriodSeconds(period) {
     try {
@@ -187,7 +142,7 @@ async function setStakingPeriodSeconds(period) {
 }
 
 async function unstakeAllUnicorns() {
-    const stakedUnicorns = await checkUnicornStakedBalance();
+    const stakedUnicorns = await DarkForestContract.numStaked(address);
     if (stakedUnicorns > 0) {
         for (let i = 0; i < stakedUnicorns; i++) {
             const tokenId = await DarkForestContract.tokenOfStakerByIndex(address, 0);
@@ -203,3 +158,12 @@ async function unstakeAllUnicorns() {
         }
     console.log(`Unstaking complete`)
 }
+
+function wait(ms){
+    console.log(`waiting ${ms /1000} seconds`)
+    var start = new Date().getTime();
+    var end = start;
+    while(end < start + ms) {
+      end = new Date().getTime();
+   }
+ }

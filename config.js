@@ -1,4 +1,14 @@
 const config = {
-    // Check gas price here https://polygonscan.com/gastracker
-    GAS_PRICE: 40.0 // gas price in gwei
+    GAS_PRICE: 60, // gas price in gwei
+    // local addresses
+    DEV_DARK_FOREST_CONTRACT: "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0",
+    DEV_UNICORN_NFT_CONTRACT: "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+    // mumbai addresses - will need updating after each new deploy
+    MUMBAI_DARK_FOREST_CONTRACT: "0xd4F109Ef933161A572f090fE3Dffe7e33814b9F6",
+    MUMBAI_UNICORN_NFT_CONTRACT: "0x81511Ab37A82fa9b917B98be86a881Dc6177B022",
+    // mainnet addresses
+    MAINNET_DARK_FOREST_CONTRACT: "0x8d528e98A69FE27b11bb02Ac264516c4818C3942",
+    MAINNET_UNICORN_NFT_CONTRACT: "0xdC0479CC5BbA033B3e7De9F178607150B3AbCe1f"
 }
+
+module.exports = config;

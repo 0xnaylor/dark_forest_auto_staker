@@ -30,7 +30,11 @@
   "scripts": {
     "start": "node --experimental-json-modules scripts/start.js",
     "rescue": "node --experimental-json-modules scripts/helper_scripts/rescue_unicorn.js",
-    "balance": "node --experimental-json-modules scripts/helper_scripts/check_unicorn_balance.js",
+    "devbalance": "node --experimental-json-modules scripts/helper_scripts/check_unicorn_balance.js dev",
+    "testbalance": "node --experimental-json-modules scripts/helper_scripts/check_unicorn_balance.js test",
+    "dev_mintUnicorn": "node --experimental-json-modules scripts/helper_scripts/mint_test_unicorn.js dev",
+    "test_mintUnicorn": "node --experimental-json-modules scripts/helper_scripts/mint_test_unicorn.js test",
+    "staked": "node --experimental-json-modules scripts/helper_scripts/check_staked_unicorns.js",
     "test": "jest"
   },
   "eslintConfig": {
