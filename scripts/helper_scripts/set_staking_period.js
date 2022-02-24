@@ -1,31 +1,44 @@
 const { ethers } = require("ethers");
-require("@nomiclabs/hardhat-ethers");
 const darkForestAbiJson = require("../../abi/darkforest_abi.json");
+const config = require("../../config");
 require("dotenv").config();
 
 async function main() {
     console.log("Running set_staking_period script");
+    const environment = process.argv[2];
+    const newStakingPeriod  = process.argv[3];
 
-    // get json rpc provider for mumbai testnet
-    const provider = new ethers.providers.JsonRpcProvider("https://rpc-mumbai.matic.today", 80001);
+    let darkForestContractAddr = "";
+    let provider;
+    let signer;
+    let wallet;
+    let darkForestContract
+    let address
 
-    // create a new wallet from the private key defined in the .env file
-    const wallet = new ethers.Wallet(process.env.PRIVATE_KEY, provider);
-    const address = wallet.address;
-
-    // define the test contract addresses
-    const DARK_FOREST_CONTRACT = "0xd4F109Ef933161A572f090fE3Dffe7e33814b9F6";
-
-    // create the contract objects
-    const DarkForestContract = new ethers.Contract(DARK_FOREST_CONTRACT, darkForestAbiJson, wallet);
+    // set up the environment
+    if (environment === 'dev') {
+      // running in dev
+      darkForestContractAddr = config.DEV_DARK_FOREST_CONTRACT;
+      provider = new ethers.providers.JsonRpcProvider();
+      signer = provider.getSigner();
+      address = await signer.getAddress();
+      darkForestContract = new ethers.Contract(darkForestContractAddr, darkForestAbiJson, provider);
+    } else {
+      // running in test
+      darkForestContractAddr = config.MUMBAI_DARK_FOREST_CONTRACT;
+      provider = new ethers.providers.JsonRpcProvider("https://rpc-mumbai.matic.today", 80001);
+      wallet = new ethers.Wallet(process.env.PRIVATE_KEY, provider);
+      address = wallet.address;
+      darkForestContract = new ethers.Contract(darkForestContractAddr, darkForestAbiJson, wallet);
+    }
 
     // check current stake period
-    console.log(`Unicorns are currently staked for ${await DarkForestContract.stakePeriodSeconds()} seconds`)
+    console.log(`Current staking period is set to: ${await darkForestContract.stakePeriodSeconds()} seconds`)
 
     // set new stake period of 1 hour (in seconds)
     const stakePeriod = 60 * 60;
     try {
-        const tx = await DarkForestContract.setStakePeriodSeconds(stakePeriod);
+        const tx = await darkForestContract.setStakePeriodSeconds(newStakingPeriod);
         console.log(`https://mumbai.polygonscan.com/tx/${tx.hash}`)
         await tx.wait();
     } catch (err) {
@@ -33,7 +46,7 @@ async function main() {
     }
 
     // check current stake period
-    console.log(`Unicorns are currently staked for ${await DarkForestContract.stakePeriodSeconds()} seconds`)
+    console.log(`Staking period is changed to: ${await darkForestContract.stakePeriodSeconds()} seconds`)
 }
 
 main()

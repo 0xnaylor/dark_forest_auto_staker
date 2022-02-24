@@ -6,34 +6,22 @@ require("dotenv").config();
 async function main() {
 
     console.log("Running check_unicorn_balance script");
-    const environment = process.argv[2];
-    const CryptoUnicornAbiJson = crypto_unicorns_artifact.abi;
-    
-    let UNICORN_NFT_CONTRACT = "";
-    let provider;
-    let signer;
-    let wallet;
+    const environment = process.argv[2];    
     let UnicornNFTContract;
     let address
 
+    console.log(`Running in environment: ${environment}`)
     if (environment === 'dev') {
-      // running in dev
-      console.log(`Running in environment: ${environment}`)
-      UNICORN_NFT_CONTRACT = config.DEV_UNICORN_NFT_CONTRACT;
-      console.log(`Contract address: ${UNICORN_NFT_CONTRACT}`)
-      provider = new ethers.providers.JsonRpcProvider();
-      signer = provider.getSigner();
-      address = await signer.getAddress();
-      UnicornNFTContract = new ethers.Contract(UNICORN_NFT_CONTRACT, CryptoUnicornAbiJson, provider);
+      // running in test
+      UnicornNFTContract = config.devUnicornNFTContract;
+      address = await config.devSigner.getAddress();
+      console.log(`dev address: ${address}`)
+
     } else {
       // running in test
-      console.log(`Running in environment: ${environment}`)
-      UNICORN_NFT_CONTRACT = config.MUMBAI_UNICORN_NFT_CONTRACT;
-      console.log(`Contract address: ${UNICORN_NFT_CONTRACT}`)
-      provider = new ethers.providers.JsonRpcProvider("https://rpc-mumbai.matic.today", 80001);
-      wallet = new ethers.Wallet(process.env.PRIVATE_KEY, provider);
-      address = wallet.address;
-      UnicornNFTContract = new ethers.Contract(UNICORN_NFT_CONTRACT, CryptoUnicornAbiJson, wallet);
+      UnicornNFTContract = config.testUnicornNFTContract;
+      address = config.testAddress;
+      console.log(`test address: ${address}`)
     }
 
     // confirm how many unicorns are owned by the address
