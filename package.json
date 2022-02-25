@@ -37,7 +37,7 @@
     "dev_mintUnicorn": "node --experimental-json-modules scripts/helper_scripts/mint_test_unicorn.js dev",
     "test_mintUnicorn": "node --experimental-json-modules scripts/helper_scripts/mint_test_unicorn.js test",
     "dev_setStakingPeriod": "node --experimental-json-modules scripts/helper_scripts/set_staking_period.js dev 60",
-    "test_setStakingPeriod": "node --experimental-json-modules scripts/helper_scripts/set_staking_period.js test 120",
+    "test_setStakingPeriod": "node --experimental-json-modules scripts/helper_scripts/set_staking_period.js test 300",
     "staked": "node --experimental-json-modules scripts/helper_scripts/check_staked_unicorns.js",
     "test": "jest"
   },

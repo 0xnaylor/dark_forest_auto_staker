@@ -4,7 +4,7 @@ const unicornAbiJson = require("../abi/cryptoUnicornAbi.json");
 require("dotenv").config();
 const logger = require("./utils/logger.js").logger;
 const config = require("../config");
-const stake = require("./stake");
+const stakeUnicorns = require("./stakeUnicorns");
 
 let darkForestContractAddr = "";
 let unicornContractAddr = ""
@@ -41,8 +41,8 @@ async function main(environment) {
     // currently set to 86400 seconds = 24 hours
     const stakingPeriod = await darkForestContract.stakePeriodSeconds();
     
-    // convert to milliseconds and add 1 minute (ensures the stakingPeriod has completed for all staked unicorns)
-    const interval = (stakingPeriod * 1000 ) + 3600;
+    // convert to milliseconds and add 5 minutes (ensures the stakingPeriod has completed for all staked unicorns)
+    const interval = (stakingPeriod * 1000 ) + 300000;
     
     logger.info({message: `Your address: ${address}`});
     logger.info({message: `Interval: ${interval}`});
@@ -73,7 +73,7 @@ async function autoStake() {
     const balanceOf = (await unicornNFTContract.balanceOf(address)).toNumber();
 
     if (balanceOf > 0) {
-        await stakeUnicorns(balanceOf);
+        await stakeUnicorns(balanceOf, address, unicornNFTContract, darkForestContractAddr);
     } else {
         logger.info({message: `User has no unicorns to stake`});
     }
@@ -118,44 +118,5 @@ async function unstakeUnicorns(stakedUnicorns) {
     }
     logger.info({message: `Unstaking complete`});
 }
-
-async function stakeUnicorns(balanceOf) {
-    let unicorns = [];
-    for (let i = 0; i < balanceOf; i++) {
-        const tokenId = (await unicornNFTContract.tokenOfOwnerByIndex(address, i)).toNumber();
-        unicorns.push({
-            i,
-            tokenId
-        })
-    }
-    logger.info({message: `The user has ${unicorns.length} unicorns to stake`});
-
-    for (let i = 0; i < balanceOf; i++) {
-        const tokenId = unicorns[i].tokenId;
-        await stake(tokenId, address, unicornNFTContract, darkForestContractAddr);
-    }
-
-    logger.info({message: `Staking complete`});
-}
-
-// async function stake(tokenId, _address) {
-//     console.log(`Gas: ${gas_price}`)
-//     console.log(`Staking Unicorn #${tokenId}... for owner ${_address}`)
-//     logger.info({message: `Staking Unicorn #${tokenId}... for owner ${_address}`});
-//     try {
-//         // Stake
-//         const tx = await unicornNFTContract['safeTransferFrom(address,address,uint256,bytes)'](
-//             _address, // from
-//             darkForestContractAddr, // to
-//             tokenId,
-//             gas_price
-//         );
-//         logger.info({message: `https://mumbai.polygonscan.com/tx/${tx.hash}`});
-//         await tx.wait();
-//     } catch (err) {
-//         logger.info({message: err});
-//         process.exit(1);
-//     }
-// }
 
 module.exports = main

@@ -1,4 +1,4 @@
-const stake = require("./stake")
+const stakeUnicorns = require("./stakeUnicorns")
 const testUtils = require("./testUtils")
 const config = require("../config")
 
@@ -10,7 +10,7 @@ beforeAll(async () => {
     await testUtils.unstakeAllUnicorns(address);
 })
 
-test('stake unicorn ', async () => {
+test('stake all unicorns in wallet', async () => {
 
     const unicornContract = config.devUnicornNFTContract;
         
@@ -30,13 +30,13 @@ test('stake unicorn ', async () => {
     console.log(`walletBalance: ${walletBalance}`)
     console.log(`stakedBalance: ${stakedBalance}`)
     
-    await stake(tokenId, address, unicornContract, config.DEV_DARK_FOREST_CONTRACT);
+    await stakeUnicorns(walletBalance, address, unicornContract, config.DEV_DARK_FOREST_CONTRACT);
     const newWalletBalance = await testUtils.checkUnicornWalletBalance(address);
     const newStakedBalance = await testUtils.checkUnicornStakedBalance(address);
 
     console.log(`newWalletBalance: ${newWalletBalance}`)
     console.log(`newStakedBalance: ${newStakedBalance}`)
         
-    expect(newStakedBalance).toEqual(1);
-    expect(newWalletBalance).toEqual(walletBalance-1);
+    expect(newStakedBalance).toEqual(walletBalance);
+    expect(newWalletBalance).toEqual(0);
 });
