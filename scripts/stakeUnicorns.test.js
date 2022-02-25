@@ -6,7 +6,6 @@ let address;
 
 beforeAll(async () => {
     address = await config.devSigner.getAddress()
-    console.log(`beforeAll address: ${address}`)
     await testUtils.unstakeAllUnicorns(address);
 })
 
@@ -21,7 +20,8 @@ test('stake all unicorns in wallet', async () => {
     if (currentUnicornBalance > 0) {
         tokenId = (await unicornContract.tokenOfOwnerByIndex(address, 0)).toNumber();
     } else {
-        testUtils.mintUnicorn(address)
+        // mint 3 unicorns
+        testUtils.mintUnicorns(address, 3)
     }
     
     const walletBalance = await testUtils.checkUnicornWalletBalance(address);

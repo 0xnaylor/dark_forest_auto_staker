@@ -1,10 +1,8 @@
-const { ethers } = require("ethers");
-const darkForestAbiJson = require("../abi/darkforest_abi.json");
-const unicornAbiJson = require("../abi/cryptoUnicornAbi.json");
 require("dotenv").config();
 const logger = require("./utils/logger.js").logger;
 const config = require("../config");
 const stakeUnicorns = require("./stakeUnicorns");
+const unstakeUnicorns = require("./unstakeUnicorns")
 
 let darkForestContractAddr = "";
 let unicornContractAddr = ""
@@ -22,14 +20,14 @@ async function main(environment) {
         address = await config.devSigner.getAddress();
         darkForestContractAddr = config.DEV_DARK_FOREST_CONTRACT;
         unicornContractAddr = config.DEV_UNICORN_NFT_CONTRACT;
-        darkForestContract = new ethers.Contract(darkForestContractAddr, darkForestAbiJson, provider);
-        unicornNFTContract = config.devUnicornNFTContract
+        darkForestContract = congif.devDarkForestContract;
+        unicornNFTContract = config.devUnicornNFTContract;
     } else {
         // running in test
         address = config.testAddress;
         darkForestContractAddr = config.MUMBAI_DARK_FOREST_CONTRACT;
         unicornContractAddr = config.MUMBAI_UNICORN_NFT_CONTRACT;
-        darkForestContract = config.testDarkForestContract
+        darkForestContract = config.testDarkForestContract;
         unicornNFTContract = config.testUnicornNFTContract;
     }
     
@@ -66,7 +64,7 @@ async function autoStake() {
     
     // if user has unicorns staked, unstake them if possible
     if (stakedUnicorns > 0) {
-        await unstakeUnicorns(stakedUnicorns);
+        await unstakeUnicorns(stakedUnicorns, address, darkForestContract);
     } 
     
     // If the user has unicorns in their wallet, we assume they want to stake them.
@@ -77,46 +75,6 @@ async function autoStake() {
     } else {
         logger.info({message: `User has no unicorns to stake`});
     }
-}
-
-async function unstakeUnicorns(stakedUnicorns) {
-    let unicorns = [];
-    logger.info({message: `User has ${stakedUnicorns} unicorns staked in the Dark Forest contract`});
-    let count = 0;
-    for(i = 0; i < stakedUnicorns; i++){
-        const tokenId = (await darkForestContract.tokenOfStakerByIndex(address, i)).toNumber();
-        const unstakedAt = (await darkForestContract.unstakesAt(tokenId)).toNumber();
-        const timeNow = Math.floor(Date.now() / 1000);
-        const canUnstake = timeNow > unstakedAt;
-
-        if (canUnstake) {
-            count++
-        }
-
-        unicorns.push({
-            i,
-            tokenId,
-            canUnstake
-        });
-    }
-    logger.info({message: `${count} unicorns can be unstaked`});
-
-    for (let i = 0; i < stakedUnicorns; i++) {
-        const unicorn = unicorns[i];
-        if (unicorn.canUnstake) {
-            logger.info({message: `Unstaking Unicorn #${unicorn.tokenId}...`});
-            // Unstake
-            try {
-                const tx = await darkForestContract.exitForest(unicorn.tokenId);
-                logger.info({message: `https://mumbai.polygonscan.com/tx/${tx.hash}`});
-                await tx.wait();
-            } catch (err) {
-                logger.info({message: err});
-                process.exit(1);
-            }
-        }
-    }
-    logger.info({message: `Unstaking complete`});
 }
 
 module.exports = main
