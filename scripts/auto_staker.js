@@ -5,10 +5,11 @@ const stakeUnicorns = require("./stakeUnicorns");
 const unstakeUnicorns = require("./unstakeUnicorns")
 
 let darkForestContractAddr = "";
-let unicornContractAddr = ""
+let unicornContractAddr = "";
 let unicornNFTContract;
-let darkForestContract
-let address
+let darkForestContract;
+let address;
+let intervalMS;
 
 async function main(environment) {
 
@@ -35,29 +36,30 @@ async function main(environment) {
     console.log(`Dark Forest contract address: ${darkForestContractAddr}`)
     console.log(`Unicorn contract address: ${unicornContractAddr}`)
 
-    // retrieve staking period from contract (in seconds)
-    // currently set to 86400 seconds = 24 hours
-    const stakingPeriod = await darkForestContract.stakePeriodSeconds();
+    // retrieve staking period from contract (returns seconds so convert to milliseconds)
+    const stakingPeriodMS = (await darkForestContract.stakePeriodSeconds()) * 1000;
     
-    // convert to milliseconds and add 5 minutes (ensures the stakingPeriod has completed for all staked unicorns)
-    const interval = (stakingPeriod * 1000 ) + 300000;
+    // add 5 minutes (ensures the stakingPeriod has completed for all staked unicorns)
+    intervalMS = (stakingPeriodMS) + 300000;
     
-    logger.info({message: `Your address: ${address}`});
-    logger.info({message: `Interval: ${interval}`});
-    logger.info({message: `Staking Period defined in contract (seconds): ${stakingPeriod}`});
-    logger.info({message: `This script will unstake/restake every ${interval/1000} seconds`});
+    logger.info({message: `Crypto Unicorns Auto Staker Log`});
+    logger.info({message: "==================================================="})
+    logger.info({message: `Your wallet address: ${address}`});
+    logger.info({message: `Staking Period defined in contract: ${formatTime(stakingPeriodMS)}`});
+    logger.info({message: `This script will unstake/restake every ${formatTime(intervalMS)}`});
 
     // perform once immediately
     autoStake()
-    // the perform every interval
+    // then perform every interval
     const intervalObj = setInterval(() => {
         autoStake();
-    }, interval);
+    }, intervalMS);
 }
 
 async function autoStake() {
-    let date = new Date();
-    logger.info({message: `Auto Stake Trigger - ${date}`});
+    let trigger = Date.now();
+    logger.info({message: "==================================================="})
+    logger.info({message: `Auto Stake Trigger - ${new Date()}`});
 
     // find out how many unicorns the user has staked
     const stakedUnicorns = (await darkForestContract.numStaked(address)).toNumber();
@@ -74,6 +76,28 @@ async function autoStake() {
         await stakeUnicorns(balanceOf, address, unicornNFTContract, darkForestContractAddr);
     } else {
         logger.info({message: `User has no unicorns to stake`});
+    }
+
+    let nextTrigger = new Date (trigger + intervalMS);
+    logger.info({message: `Next run at: ${nextTrigger}`})
+}
+
+const formatTime = (interval) => {
+    // 1 second = 1000 ms
+    const intervalSeconds = interval / 1000;
+    // 1 minute = 60000 ms
+    const intervalMinutes = (interval / 60000).toFixed(2);
+    // 1 hour = 3600000 ms
+    const intervalHours = (interval / 3600000).toFixed(2);
+    
+    if (interval > 3600000) {
+        // display message in hours
+        return `${intervalHours} hours`
+    } else if(interval > 60000 && interval < 3599999) {
+        // display message in minutes
+        return `${intervalMinutes} minutes`
+    } else {
+        return `${intervalSeconds} seconds`
     }
 }
 

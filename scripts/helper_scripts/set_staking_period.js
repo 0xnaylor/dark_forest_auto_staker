@@ -35,8 +35,6 @@ async function main() {
     // check current stake period
     console.log(`Current staking period is set to: ${await darkForestContract.stakePeriodSeconds()} seconds`)
 
-    // set new stake period of 1 hour (in seconds)
-    const stakePeriod = 60 * 60;
     try {
         const tx = await darkForestContract.setStakePeriodSeconds(newStakingPeriod);
         console.log(`https://mumbai.polygonscan.com/tx/${tx.hash}`)
