@@ -1,20 +1,24 @@
 const config = require("../config")
 const testUtils = require("./testUtils")
+const unstakeUnicorns = require("./unstakeUnicorns")
+jest.setTimeout(100000)
 
 let address;
 
 beforeAll(async () => {
     address = await config.devSigner.getAddress();
     const walletBalance = await testUtils.checkUnicornWalletBalance(address);
-    console.log(`Wallet balance: ${walletBalance}`)
-    
+
+    // set staking period to 5 seconds
+    await testUtils.setStakingPeriodSeconds(5);
+})
+
+beforeEach(async () => {
     await testUtils.stakeAllUnicorns(address);
     const stakedBalance = await testUtils.checkUnicornStakedBalance(address);
-    console.log(`Staked balance: ${stakedBalance}`)
 
     // staked balance needs to be greater than 1
     if (stakedBalance <= 1) {
-        console.log('staked unicorns is less than 2')
         // we've already staked all our unicorns so we need to mint some more
         await testUtils.mintUnicorns(address, 3)
         // then stake them
@@ -26,17 +30,35 @@ test('unstake all unicorns', async () => {
     const walletBalance = await testUtils.checkUnicornWalletBalance(address);
     const stakedBalance = await testUtils.checkUnicornStakedBalance(address);
 
-    console.log(`walletBalance: ${walletBalance}`)
-    console.log(`stakedBalance: ${stakedBalance}`)
+    // wait until tokens can be unstaked
+    const tokenId = (await config.devDarkForestContract.tokenOfStakerByIndex(address, 0)).toNumber();
+    const unstakedAt = (await config.devDarkForestContract.unstakesAt(tokenId)).toNumber();
+    let timeNow;
 
-    await testUtils.unstakeAllUnicorns(address);
+    do {
+        testUtils.wait(1000)
+        timeNow = Math.floor(Date.now() / 1000);
+        console.log(`Time now is: ${timeNow}, waiting for ${unstakedAt+5}`)
+    } while (timeNow <= unstakedAt +5);
+
+    await unstakeUnicorns(stakedBalance, address, config.devDarkForestContract);
 
     const newWalletBalance = await testUtils.checkUnicornWalletBalance(address);
     const newStakedBalance = await testUtils.checkUnicornStakedBalance(address);
 
-    console.log(`newWalletBalance: ${newWalletBalance}`)
-    console.log(`newStakedBalance: ${newStakedBalance}`)
-
     expect(newWalletBalance).toEqual(stakedBalance);
     expect(newStakedBalance).toEqual(0);
+})
+
+test('attempt to unstake all unicorns before stake period has completed and fails', async () => {
+    const walletBalance = await testUtils.checkUnicornWalletBalance(address);
+    const stakedBalance = await testUtils.checkUnicornStakedBalance(address);
+
+    await unstakeUnicorns(stakedBalance, address, config.devDarkForestContract);
+
+    const newWalletBalance = await testUtils.checkUnicornWalletBalance(address);
+    const newStakedBalance = await testUtils.checkUnicornStakedBalance(address);
+    
+    expect(newWalletBalance).toEqual(0);
+    expect(newStakedBalance).toEqual(stakedBalance);
 })

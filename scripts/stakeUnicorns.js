@@ -17,7 +17,6 @@ async function stakeUnicorns(balanceOf, walletAddress, unicornContract, darkFore
         const tokenId = unicorns[i].tokenId;
         try {
             // Stake
-            console.log(`Staking Unicorn #${tokenId}`)
             logger.info({message: `Staking Unicorn #${tokenId}`});
             const tx = await unicornContract['safeTransferFrom(address,address,uint256,bytes)'](
                 walletAddress, // from

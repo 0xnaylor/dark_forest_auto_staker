@@ -295,19 +295,19 @@ contract DarkForest is
             address(this)
         );
         uint256 reward = UnicornMilkStakingReward;
-        TerminusFacet terminusContract = TerminusFacet(TerminusAddress);
-        for (uint256 i = 0; i < 3; i++) {
-            reward += (ShadowcornEggBonusesToUnicornMilk[i] *
-                terminusContract.balanceOf(_msgSender(), ShadowcornPoolIds[i]));
-        }
-        if (darkForestUnicornMilkBalance < reward) {
-            reward = UnicornMilkStakingReward;
-        }
-        if (darkForestUnicornMilkBalance >= reward) {
-            unimContract.transfer(_msgSender(), reward);
-        } else {
-            reward = 0;
-        }
+        // TerminusFacet terminusContract = TerminusFacet(TerminusAddress);
+        // for (uint256 i = 0; i < 3; i++) {
+        //     reward += (ShadowcornEggBonusesToUnicornMilk[i] *
+        //         terminusContract.balanceOf(_msgSender(), ShadowcornPoolIds[i]));
+        // }
+        // if (darkForestUnicornMilkBalance < reward) {
+        //     reward = UnicornMilkStakingReward;
+        // }
+        // if (darkForestUnicornMilkBalance >= reward) {
+        //     unimContract.transfer(_msgSender(), reward);
+        // } else {
+        //     reward = 0;
+        // }
         _removeTokenFromStakerEnumeration(_msgSender(), tokenId);
         Staker[tokenId] = address(0);
         UnstakesAt[tokenId] = 0;
