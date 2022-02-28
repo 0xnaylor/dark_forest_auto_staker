@@ -1,7 +1,6 @@
 const config = require("../config")
 const devDarkForestContract = config.devDarkForestContract;
 const devUnicornContract = config.devUnicornNFTContract;
-const stakeUnicorns = require("./stakeUnicorns")
 
 const checkUnicornWalletBalance = async (account) => {
     return (await devUnicornContract.balanceOf(account)).toNumber();
@@ -15,7 +14,7 @@ const checkStakingInterval = async () => {
     return await devDarkForestContract.stakePeriodSeconds();
 }
 
-const setStakingPeriodSeconds = async (period) => {
+const setStakingPeriodSeconds = async (period, devDarkForestContract) => {
     console.log(`setting staking period to ${period} seconds`)
     try {
         const tx = await devDarkForestContract.setStakePeriodSeconds(period);
@@ -26,7 +25,6 @@ const setStakingPeriodSeconds = async (period) => {
 }
 
 const unstakeAllUnicorns = async (stakedUnicorns, address) => {
-    console.log(`unicorns staked: ${stakedUnicorns}`)
     let unicorns = [];
     if (stakedUnicorns > 0) {
         for (let i = 0; i < stakedUnicorns; i++) {
@@ -34,14 +32,15 @@ const unstakeAllUnicorns = async (stakedUnicorns, address) => {
             // unstake a unicorn
             unicorns.push({i, tokenId});
           }
+        } else {
+            console.log(`No unicorns are currently staked`)
         }
 
-        for (let i = 0; i < stakedUnicorns; i++) {
+        for (let i = 0; i < unicorns.length; i++) {
             const tokenId = unicorns[i].tokenId
             try {
               const tx = await devDarkForestContract.rescueUnicorn(tokenId);
               await tx.wait();
-              console.log(`unstake unicorn: ${tokenId}`)
             } catch (err) {
               console.error(err);
             }
@@ -49,16 +48,31 @@ const unstakeAllUnicorns = async (stakedUnicorns, address) => {
     console.log(`Unstaking complete`)
 }
 
-const stakeAllUnicorns = async (address) => {
-    
-    // find out balance in wallet 
-    const walletBalance = await checkUnicornWalletBalance(address)
+const stakeAllUnicorns = async (balanceOf, address) => {
 
-    if (walletBalance > 0) {
-        // stake any remaining in wallet
-        await stakeUnicorns(walletBalance, address, devUnicornContract, config.DEV_DARK_FOREST_CONTRACT);
-    } else {
-        console.log('There are no unicorns in your wallet to stake')
+    let unicorns = [];
+    for (let i = 0; i < balanceOf; i++) {
+        const tokenId = (await devUnicornContract.tokenOfOwnerByIndex(address, i)).toNumber();
+        unicorns.push({
+            i,
+            tokenId
+        })
+    }
+
+    for (let i = 0; i < balanceOf; i++) {
+        const tokenId = unicorns[i].tokenId;
+        try {
+            const tx = await devUnicornContract['safeTransferFrom(address,address,uint256,bytes)'](
+                address, // from
+                config.DEV_DARK_FOREST_CONTRACT, // to
+                tokenId,
+                config.gasPrice
+            );
+            await tx.wait();
+        } catch (err) {
+            console.log(`Error: ${err}`)
+            process.exit(1);
+        }
     }
 }
 
@@ -71,7 +85,7 @@ const mintUnicorns = async (address, quantity) => {
         "image": "https://gateway.pinata.cloud/ipfs/QmeZ8EJ6PTtdJcYPPvrbeRMvVAJV9azSuQcUgExwu4tp3C"
     }
 
-    for(i = 1; i <= quantity; i++) {
+    for(i = 0; i < quantity; i++) {
         try {
             const tx = await devUnicornContract.safeMint(address, uri);
             await tx.wait();

@@ -6,8 +6,8 @@ require("dotenv").config();
 // define contract address for different environments
 const cryptoUnicornAbiJson = crypto_unicorns_artifact.abi;
 const darkForestAbiJson = dark_forest_artifact.abi;
-const DEV_DARK_FOREST_CONTRACT = "0x44863F234b137A395e5c98359d16057A9A1fAc55";
-const DEV_UNICORN_NFT_CONTRACT = "0x2f8D338360D095a72680A943A22fE6a0d398a0B4";
+const DEV_DARK_FOREST_CONTRACT = "0xa6fA98A9A2496b8726897ea539344cea9890915f";
+const DEV_UNICORN_NFT_CONTRACT = "0x4C70a29A4be0954eE358f03C18BecCb888549c01";
 const MUMBAI_DARK_FOREST_CONTRACT = "0xd4F109Ef933161A572f090fE3Dffe7e33814b9F6";
 const MUMBAI_UNICORN_NFT_CONTRACT = "0x81511Ab37A82fa9b917B98be86a881Dc6177B022";
 const MAINNET_DARK_FOREST_CONTRACT = "0x8d528e98A69FE27b11bb02Ac264516c4818C3942";
@@ -45,4 +45,5 @@ exports.testDarkForestContract = testDarkForestContract;
 
 exports.testAddress = testAddress;
 exports.devSigner = devSigner;
+exports.devProvider = devProvider;
 
