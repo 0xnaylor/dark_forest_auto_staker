@@ -1,5 +1,4 @@
 const { ethers } = require("ethers");
-require("@nomiclabs/hardhat-ethers");
 const dark_forest_artifact = require("../../artifacts/contracts/DarkForest.sol/DarkForest.json");
 require("dotenv").config();
 // const fs = require('fs');
@@ -23,7 +22,8 @@ async function main() {
     const address = wallet.address;
 
     // define the test contract addresses
-    const DARK_FOREST_CONTRACT = "0xd4F109Ef933161A572f090fE3Dffe7e33814b9F6";
+    // const DARK_FOREST_CONTRACT = "0xd4F109Ef933161A572f090fE3Dffe7e33814b9F6";
+    const DARK_FOREST_CONTRACT = "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0";
 
     // define contract abi's
     const DarkForestAbiJson = dark_forest_artifact.abi;
@@ -33,6 +33,7 @@ async function main() {
 
     // check number of unicorns staked by address
     const numStaked = await DarkForestContract.numStaked(address);
+    console.log(`address: ${address} has ${numStaked} unicorns staked`)
 
     // check current stake period
     console.log(`Staking period for Unicorns is set to ${await DarkForestContract.stakePeriodSeconds()} seconds`)

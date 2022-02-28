@@ -1,21 +1,32 @@
 const { ethers } = require("ethers");
+const config = require("../../config");
 const crypto_unicorns_artifact = require("../../artifacts/contracts/CryptoUnicorns.sol/CryptoUnicorns.json");
 require("dotenv").config();
 
 async function main() {
 
     console.log("Running check_unicorn_balance script");
+    const environment = process.argv[2];    
+    let UnicornNFTContract;
+    let address
 
-    const provider = new ethers.providers.JsonRpcProvider("https://rpc-mumbai.matic.today", 80001);
-    const wallet = new ethers.Wallet(process.env.PRIVATE_KEY, provider);
-    const address = wallet.address;
-    const UNICORN_NFT_CONTRACT = "0x81511Ab37A82fa9b917B98be86a881Dc6177B022";
-    const CryptoUnicornAbiJson = crypto_unicorns_artifact.abi;
-    const UnicornNFTContract = new ethers.Contract(UNICORN_NFT_CONTRACT, CryptoUnicornAbiJson, wallet);
+    console.log(`Running in environment: ${environment}`)
+    if (environment === 'dev') {
+      // running in test
+      UnicornNFTContract = config.devUnicornNFTContract;
+      address = await config.devSigner.getAddress();
+      console.log(`dev address: ${address}`)
+
+    } else {
+      // running in test
+      UnicornNFTContract = config.testUnicornNFTContract;
+      address = config.testAddress;
+      console.log(`test address: ${address}`)
+    }
 
     // confirm how many unicorns are owned by the address
     const tokensOwned = await UnicornNFTContract.balanceOf(address);
-    console.log(`Address: ${address} has ${tokensOwned} unstaked Unicorns`);
+    console.log(`Address: ${address} has ${tokensOwned} unstaked Unicorns in their wallet`);
 }
 
 main()

@@ -28,9 +28,17 @@
     "winston": "^3.6.0"
   },
   "scripts": {
-    "start": "node --experimental-json-modules scripts/start.js",
-    "rescue": "node --experimental-json-modules scripts/helper_scripts/rescue_unicorn.js",
-    "balance": "node --experimental-json-modules scripts/helper_scripts/check_unicorn_balance.js",
+    "dev_start": "node --experimental-json-modules scripts/start.js dev",
+    "test_start": "node --experimental-json-modules scripts/start.js test",
+    "dev_rescue": "node --experimental-json-modules scripts/helper_scripts/rescue_unicorn.js dev",
+    "test_rescue": "node --experimental-json-modules scripts/helper_scripts/rescue_unicorn.js test",
+    "devbalance": "node --experimental-json-modules scripts/helper_scripts/check_unicorn_balance.js dev",
+    "testbalance": "node --experimental-json-modules scripts/helper_scripts/check_unicorn_balance.js test",
+    "dev_mintUnicorn": "node --experimental-json-modules scripts/helper_scripts/mint_test_unicorn.js dev",
+    "test_mintUnicorn": "node --experimental-json-modules scripts/helper_scripts/mint_test_unicorn.js test",
+    "dev_setStakingPeriod": "node --experimental-json-modules scripts/helper_scripts/set_staking_period.js dev 60",
+    "test_setStakingPeriod": "node --experimental-json-modules scripts/helper_scripts/set_staking_period.js test 300",
+    "staked": "node --experimental-json-modules scripts/helper_scripts/check_staked_unicorns.js",
     "test": "jest"
   },
   "eslintConfig": {

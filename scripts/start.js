@@ -1,2 +1,3 @@
 const main = require("./auto_staker");
-main();
+const environment = process.argv[2];
+main(environment);
