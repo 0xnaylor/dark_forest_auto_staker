@@ -1,6 +1,7 @@
 const { ethers } = require("ethers");
 const crypto_unicorns_artifact = require("./artifacts/contracts/CryptoUnicorns.sol/CryptoUnicorns.json");
 const dark_forest_artifact = require("./artifacts/contracts/DarkForest.sol/DarkForest.json");
+const main = require("./scripts/auto_staker");
 require("dotenv").config();
 
 // define contract address for different environments
@@ -26,6 +27,13 @@ const testAddress = wallet.address;
 const testUnicornNFTContract = new ethers.Contract(MUMBAI_UNICORN_NFT_CONTRACT, cryptoUnicornAbiJson, wallet);
 const testDarkForestContract = new ethers.Contract(MUMBAI_DARK_FOREST_CONTRACT, darkForestAbiJson, wallet);
 
+// mainnet
+const mainnetPovider = new ethers.providers.JsonRpcProvider("https://polygon-rpc.com/", 137);
+const mainnetWallet = new ethers.Wallet(process.env.PRIVATE_KEY, mainnetPovider);
+const mainnetAddress = mainnetWallet.address;
+const mainnetUnicornContract = new ethers.Contract(MAINNET_UNICORN_NFT_CONTRACT, cryptoUnicornAbiJson, mainnetWallet);
+const mainnetDarkForestContract = new ethers.Contract(MAINNET_DARK_FOREST_CONTRACT, darkForestAbiJson, mainnetWallet);
+
 const gasPrice = ethers.utils.parseUnits(String(40.0), 'gwei');
 
 // export what we want to use elsewhere
@@ -42,8 +50,13 @@ exports.testUnicornNFTContract = testUnicornNFTContract;
 exports.devUnicornNFTContract = devUnicornNFTContract;
 exports.devDarkForestContract = devDarkForestContract;
 exports.testDarkForestContract = testDarkForestContract;
+exports.mainnetUnicornContract = mainnetUnicornContract;
+exports.mainnetDarkForestContract = mainnetDarkForestContract;
 
+// signers, providers and addresses
 exports.testAddress = testAddress;
 exports.devSigner = devSigner;
 exports.devProvider = devProvider;
+exports.mainnetAddress = mainnetAddress;
+exports.mainnetPovider = mainnetPovider;
 

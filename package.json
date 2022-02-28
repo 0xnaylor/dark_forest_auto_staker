@@ -28,6 +28,7 @@
     "winston": "^3.6.0"
   },
   "scripts": {
+    "main_start": "node --experimental-json-modules scripts/start.js main",
     "dev_start": "node --experimental-json-modules scripts/start.js dev",
     "test_start": "node --experimental-json-modules scripts/start.js test",
     "dev_rescue": "node --experimental-json-modules scripts/helper_scripts/rescue_unicorn.js dev",
@@ -37,7 +38,7 @@
     "dev_mintUnicorn": "node --experimental-json-modules scripts/helper_scripts/mint_test_unicorn.js dev",
     "test_mintUnicorn": "node --experimental-json-modules scripts/helper_scripts/mint_test_unicorn.js test",
     "dev_setStakingPeriod": "node --experimental-json-modules scripts/helper_scripts/set_staking_period.js dev 60",
-    "test_setStakingPeriod": "node --experimental-json-modules scripts/helper_scripts/set_staking_period.js test 300",
+    "test_setStakingPeriod": "node --experimental-json-modules scripts/helper_scripts/set_staking_period.js test 3600",
     "staked": "node --experimental-json-modules scripts/helper_scripts/check_staked_unicorns.js",
     "test": "jest"
   },

@@ -23,13 +23,20 @@ async function main(environment) {
         unicornContractAddr = config.DEV_UNICORN_NFT_CONTRACT;
         darkForestContract = congif.devDarkForestContract;
         unicornNFTContract = config.devUnicornNFTContract;
-    } else {
+    } else if (environment === 'test') {
         // running in test
         address = config.testAddress;
         darkForestContractAddr = config.MUMBAI_DARK_FOREST_CONTRACT;
         unicornContractAddr = config.MUMBAI_UNICORN_NFT_CONTRACT;
         darkForestContract = config.testDarkForestContract;
         unicornNFTContract = config.testUnicornNFTContract;
+    } else if (environment === 'main') {
+        // running against mainnet
+        address = config.mainnetAddress;
+        darkForestContractAddr = config.MAINNET_DARK_FOREST_CONTRACT;
+        unicornContractAddr = config.MAINNET_UNICORN_NFT_CONTRACT;
+        darkForestContract = config.mainnetDarkForestContract;
+        unicornNFTContract = config.mainnetUnicornContract;
     }
     
     console.log(`Running in environment: ${environment}`)
@@ -67,7 +74,9 @@ async function autoStake() {
     // if user has unicorns staked, unstake them if possible
     if (stakedUnicorns > 0) {
         await unstakeUnicorns(stakedUnicorns, address, darkForestContract);
-    } 
+    } else {
+        logger.info({message: `User has no staked unicorns`});
+    }
     
     // If the user has unicorns in their wallet, we assume they want to stake them.
     const balanceOf = (await unicornNFTContract.balanceOf(address)).toNumber();
